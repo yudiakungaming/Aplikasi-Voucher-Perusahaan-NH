@@ -5,7 +5,7 @@
 // ═══════════════════════════════════════════════════════
 
 // ===== KONFIGURASI =====
-const BASE_URL = 'https://script.google.com/macros/s/AKfycbzkjnWUqXwGFnj5PgmGzO57WyGRy5aOIxe2xplW8mqoTc9x8A3rn-dTamLrKRJYlw/exec';
+const BASE_URL = 'https://script.google.com/macros/s/AKfycbxqjX7mgGG5F-Nfk9vXcWXyyd8OmvDaXio6pOUFf5HMRiSzNwml_dyi9--M1pJj_XoD/exec';
 const APPS_SCRIPT_URL = () => `${BASE_URL}?action=getVouchers&_t=${Date.now()}`;
 const SYNC_TRIGGER_URL = () => `${BASE_URL}?action=triggerSync&token=Yudi0201&_t=${Date.now()}`;
 
