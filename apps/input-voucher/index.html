@@ -857,6 +857,27 @@
         grid-template-columns: 1fr 1fr;
       }
     }
+
+    /* ✅ Back to Portal Button Styles (DITAMBAHKAN) */
+    #backToPortal a {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 4px 8px;
+      border-radius: 6px;
+      background: rgba(99, 102, 241, 0.08);
+      border: 1px solid rgba(99, 102, 241, 0.15);
+      transition: all 0.2s;
+      font-size: 10px;
+      color: var(--muted);
+      text-decoration: none;
+    }
+    #backToPortal a:hover {
+      background: rgba(99, 102, 241, 0.15);
+      border-color: rgba(99, 102, 241, 0.3);
+      color: var(--accent);
+      transform: translateX(-2px);
+    }
   </style>
 </head>
 
@@ -912,10 +933,18 @@
             </div>
           </div>
           
-          <!-- Connection Status -->
-          <div id="hdrStatus" class="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-[--bg2] border border-[--border]">
-            <div class="status-dot loading" id="sDot"></div>
-            <span class="text-[11px] text-[--muted]" id="sText">Menghubungkan...</span>
+          <!-- Connection Status + Back Button -->
+          <div class="flex flex-col items-end gap-1">
+            <div id="hdrStatus" class="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-[--bg2] border border-[--border]">
+              <div class="status-dot loading" id="sDot"></div>
+              <span class="text-[11px] text-[--muted]" id="sText">Menghubungkan...</span>
+            </div>
+            <!-- ✅ Tombol Kembali ke Portal (DITAMBAHKAN) -->
+            <div id="backToPortal" style="display:none">
+              <a href="../" class="flex items-center gap-1">
+                🏠 Kembali ke Portal
+              </a>
+            </div>
           </div>
           
           <!-- Auth Section (Hidden by default, shown after login) -->
@@ -923,13 +952,13 @@
             <div id="hdrBadge" class="comp-badge"></div>
             <span id="hdrEmail" class="hdr-email"></span>
             
-            <!-- ✅ UPDATED: Link ke folder dashboard-voucher -->
-            <a id="voucherAppBtn" href="../dashboard-voucher/" target="_blank" class="btn btn-success" title="Buka Aplikasi Pencatatan Voucher" style="padding:5px 12px;font-size:11px;">🎟️ Pencatatan Voucher</a>
+            <!-- ✅ Link ke Dashboard (SUDAH BENAR: path relatif) -->
+            <a id="voucherAppBtn" href="../dashboard-voucher/" target="_blank" class="btn btn-success" title="Buka Aplikasi Dashboard" style="padding:5px 12px;font-size:11px;">📊 Dashboard</a>
 
-            <!-- Tombol Perusahaan & Keluar (di dalam hdrAuth) -->
+            <!-- Tombol Perusahaan & Keluar -->
             <button id="companyBtn" onclick="openCompanyModal()" class="btn btn-ghost" title="Kelola Perusahaan" style="padding:5px 12px;font-size:11px;">⚙️ Perusahaan</button>
             
-            <!-- Tombol Migrasi (Ditambahkan) -->
+            <!-- Tombol Migrasi -->
             <button id="migrationBtn" onclick="openMigrationModal()" class="btn btn-outline" title="Migrasi Data Firebase" style="padding:5px 12px;font-size:11px;">🔄 Migrasi</button>
             
             <button id="logoutBtn" class="btn-logout" onclick="doLogout()">Keluar</button>
@@ -1752,6 +1781,34 @@
     }
     
     console.log('%c🖨️ PDF cleanup helper loaded', 'color: #22c55e; font-size: 11px;');
+  </script>
+
+  <!-- ✅ Show/Hide Back Button based on auth state -->
+  <script>
+    // Tampilkan tombol "Kembali ke Portal" hanya setelah user login
+    document.addEventListener('DOMContentLoaded', function() {
+      const backBtn = document.getElementById('backToPortal');
+      const hdrAuth = document.getElementById('hdrAuth');
+      
+      // Fungsi untuk toggle visibility
+      function updateBackButton() {
+        if (hdrAuth && hdrAuth.style.display !== 'none') {
+          // User sudah login → tampilkan back button
+          if (backBtn) backBtn.style.display = 'block';
+        } else {
+          // Guest mode → sembunyikan
+          if (backBtn) backBtn.style.display = 'none';
+        }
+      }
+      
+      // Initial check
+      updateBackButton();
+      
+      // Listen untuk perubahan auth state (jika app.js memicu event)
+      if (typeof window.addEventListener === 'function') {
+        window.addEventListener('authStateChanged', updateBackButton);
+      }
+    });
   </script>
 
 </body>
