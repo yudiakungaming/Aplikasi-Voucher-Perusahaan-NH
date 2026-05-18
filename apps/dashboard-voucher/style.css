@@ -899,3 +899,24 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
 .close-btn:hover {
     background: rgba(0,0,0,0.1);
 }
+.back-to-portal {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    background: rgba(99, 102, 241, 0.1);
+    border: 1px solid rgba(99, 102, 241, 0.2);
+    border-radius: 8px;
+    color: #6366f1;
+    text-decoration: none;
+    font-size: 12px;
+    font-weight: 500;
+    transition: all 0.2s ease;
+    margin-left: 8px;
+}
+.back-to-portal:hover {
+    background: rgba(99, 102, 241, 0.2);
+    border-color: rgba(99, 102, 241, 0.4);
+    transform: translateX(-2px);
+    color: #4f46e5;
+}
