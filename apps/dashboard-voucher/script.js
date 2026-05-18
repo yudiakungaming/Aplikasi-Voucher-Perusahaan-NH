@@ -1,6 +1,6 @@
 // ═══════════════════════════════════════════════════════
-// FINANCE SYNC PRO - DASHBOARD SCRIPT (v4.3 - FINAL SYNC)
-// ✅ FIX: Column "dibayarkanKepada" included in normalization
+// FINANCE SYNC PRO - DASHBOARD SCRIPT (v4.4 - DEBUG ENABLED)
+// ✅ FIX: Added debug logging for dibayarkanKepada field
 // ✅ Semua fitur + Charts, Pagination, PWA, Advanced Filters
 // ═══════════════════════════════════════════════════════
 
@@ -321,7 +321,15 @@ async function fetchData(force = false, retryCount = 0) {
         const result = await response.json();
         if (!result?.success) throw new Error(result?.message || 'Unknown error');
         
+        // DEBUG: Log raw data dari server
+        console.log('📊 Raw data dari server:', result);
+        
         allVouchers = normalizeData(result);
+        
+        // DEBUG: Log data setelah normalisasi
+        console.log('📋 Sample data setelah normalisasi:', allVouchers[0]);
+        console.log('🔍 Field dibayarkanKepada:', allVouchers[0]?.dibayarkanKepada);
+        
         lastFetchTime = now;
         
         if (isOnline) await cacheDataToIndexedDB(allVouchers);
