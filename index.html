@@ -4,6 +4,19 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>FinanceSync Pro - Portal</title>
+  
+  <!-- 📱 PWA Meta Tags (DITAMBAHKAN) -->
+  <meta name="application-name" content="FinanceSync Pro">
+  <meta name="apple-mobile-web-app-title" content="FinanceSync">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="theme-color" content="#6366f1">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="apple-touch-icon" href="/icons/icon-192x192.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="/icons/icon-192x192.png">
+  <link rel="icon" type="image/png" sizes="512x512" href="/icons/icon-512x512.png">
+  
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;700&display=swap" rel="stylesheet">
   <style>
@@ -48,6 +61,51 @@
   <div class="mt-12 text-xs text-gray-600">
     v4.0.0 • Multi-App Repository
   </div>
+
+  <!-- 📱 PWA Service Worker Registration (DITAMBAHKAN) -->
+  <script>
+    // Register Service Worker jika browser support
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/sw.js')
+          .then((registration) => {
+            console.log('✅ SW registered:', registration.scope);
+            
+            // Cek update tersedia
+            registration.addEventListener('updatefound', () => {
+              const newWorker = registration.installing;
+              newWorker.addEventListener('statechange', () => {
+                if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                  console.log('🔄 New version available!');
+                  // Opsional: tampilkan notifikasi update ke user
+                }
+              });
+            });
+          })
+          .catch((error) => {
+            console.log('❌ SW registration failed:', error);
+          });
+      });
+    }
+
+    // 📱 Deteksi installability (untuk custom install button jika perlu)
+    let deferredPrompt;
+    window.addEventListener('beforeinstallprompt', (e) => {
+      e.preventDefault();
+      deferredPrompt = e;
+      console.log('💡 App can be installed');
+      // Contoh: tampilkan tombol install custom
+      // document.getElementById('installBtn')?.classList.remove('hidden');
+    });
+
+    // ✅ Deteksi jika app sudah di-install
+    window.addEventListener('appinstalled', () => {
+      console.log('🎉 App was installed!');
+      deferredPrompt = null;
+      // Opsional: sembunyikan tombol install setelah terinstall
+      // document.getElementById('installBtn')?.classList.add('hidden');
+    });
+  </script>
 
 </body>
 </html>
