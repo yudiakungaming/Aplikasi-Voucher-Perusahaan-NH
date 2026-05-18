@@ -3,21 +3,17 @@
  * FinanceSync Pro v3.8.1 - Firebase Initialization
  * ============================================
  * 
- * ✅ VERSION: Fixed v3.8.5
+ * ✅ VERSION: Fixed v3.8.5 + Session Management v3.8.10
  * 🎯 FIX: 
  *   1. Graceful handling for "Missing or insufficient permissions" 
  *   2. 🔧 FIXED: doc.exists is not a function (SDK compatibility)
  *   3. 🔧 IMPROVED: Connection monitor doesn't show "Offline" for metadata errors
  *   4. 🔧 CRITICAL: Persistence DISABLED - write langsung ke server (no local cache)
+ *   5. 🔐 NEW: Session timeout & no auto-login feature
  * 
  * ⚠️ SDK VERSION REQUIREMENT:
  *   - Gunakan Firebase SDK v8 (namespaced) ATAU v9+ (modular) secara KONSISTEN
  *   - Jangan campur kedua style dalam satu project
- * 
- * 📦 Jika pakai v8 (namespaced) - script di HTML:
- *   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
- *   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
- *   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
  */
 
 // ==========================================
@@ -78,11 +74,7 @@ async function initializeFirebase() {
       firebaseDb = firebase.firestore();
 
       // 🔧 CRITICAL FIX v3.8.5: DISABLE persistence - write langsung ke server
-      // Jika persistence aktif, data bisa tersimpan di local (IndexedDB) dan gagal sync ke server
-      // Untuk aplikasi yang selalu online, lebih aman write langsung ke server
       try {
-        // await firebaseDb.enablePersistence({ synchronizeTabs: true });
-        // console.log('✅ Firestore persistence enabled');
         console.log('ℹ️ Firestore persistence DISABLED - write langsung ke server (v3.8.5)');
       } catch (persistenceError) {
         console.warn('⚠️ Firestore persistence not enabled:', persistenceError.message);
@@ -128,7 +120,7 @@ async function initializeFirebase() {
 }
 
 // ==========================================
-// 👤 Authentication State Management
+// 👤 Authentication State Management + SESSION CHECK
 // ==========================================
 
 function setupAuthListener(onSignIn, onSignOut) {
@@ -149,7 +141,26 @@ function setupAuthListener(onSignIn, onSignOut) {
 
     try {
       if (user) {
-        console.log('✅ User logged in:', user.email);
+        console.log('✅ Firebase: User logged in:', user.email);
+
+        // 🔐 SESSION MANAGEMENT CHECK (NEW v3.8.10)
+        // Cek apakah session masih valid sebelum izinkan akses dashboard
+        const sessionConfig = typeof SESSION_CONFIG !== 'undefined' ? SESSION_CONFIG : { ENABLE_SESSION_TIMEOUT: false, AUTO_LOGIN: false };
+        const sessionManager = typeof window.sessionManager !== 'undefined' ? window.sessionManager : null;
+
+        if (sessionConfig.ENABLE_SESSION_TIMEOUT && sessionConfig.AUTO_LOGIN === false) {
+          if (sessionManager && !sessionManager.isValid()) {
+            console.log('🚫 Session invalid/expired - forcing Firebase logout');
+            sessionManager.clear();
+            await firebaseAuth.signOut();
+            showLoginScreen();
+            updateConnectionStatus('loading', 'Session expired. Login ulang');
+            return; // STOP - jangan lanjut ke dashboard
+          }
+        }
+
+        // ✅ Session valid → lanjut ke dashboard
+        console.log('✅ Session valid, proceeding to dashboard');
 
         updateConnectionStatus('ok', 'Terhubung');
 
@@ -162,6 +173,12 @@ function setupAuthListener(onSignIn, onSignOut) {
 
         await loadCompaniesForLogin();
         await _checkAndHandleFirstTimeUser();
+
+        // 🔐 Setup activity tracking untuk refresh session
+        if (typeof window.setupActivityTracking === 'function') {
+          window.setupActivityTracking();
+          console.log('🔄 Activity tracking enabled for session refresh');
+        }
 
         if (typeof onSignIn === 'function') {
           try {
@@ -331,7 +348,7 @@ function hideLoaderAndShowScreen(isDashboard) {
 }
 
 // ==========================================
-// 🔐 Login & Logout
+// 🔐 Login & Logout + SESSION MANAGEMENT
 // ==========================================
 
 async function loginUser(email, password) {
@@ -355,6 +372,18 @@ async function loginUser(email, password) {
     var userCredential = await firebaseAuth.signInWithEmailAndPassword(email, password);
 
     console.log('✅ Login successful!');
+
+    // 🔐 CREATE SESSION AFTER SUCCESSFUL LOGIN (NEW v3.8.10)
+    const sessionManager = typeof window.sessionManager !== 'undefined' ? window.sessionManager : null;
+    if (sessionManager && userCredential.user) {
+      // Ambil company yang dipilih dari localStorage
+      const selectedCompany = typeof StorageUtils !== 'undefined' 
+        ? StorageUtils.get('financesync_selectedCompany') 
+        : null;
+      
+      sessionManager.set(userCredential.user.uid, selectedCompany?.id || null);
+      console.log('🔐 Session created for user:', userCredential.user.email);
+    }
 
     if (typeof Toast !== 'undefined') {
       Toast.success('Login berhasil! Selamat datang 👋');
@@ -412,6 +441,13 @@ async function logoutUser() {
   try {
     console.log('🚪 Logging out...');
 
+    // 🔐 CLEAR SESSION BEFORE LOGOUT (NEW v3.8.10)
+    const sessionManager = typeof window.sessionManager !== 'undefined' ? window.sessionManager : null;
+    if (sessionManager) {
+      sessionManager.clear();
+      console.log('🗑️ Session cleared on logout');
+    }
+
     await firebaseAuth.signOut();
 
     console.log('✅ Logout successful');
@@ -466,9 +502,6 @@ function updateConnectionStatus(status, message) {
 
 /**
  * 🔧 IMPROVED v3.8.4: Monitor Firestore connection status
- * - Defensive check for SDK compatibility
- * - Doesn't show "Offline" for .info/connected metadata errors
- * - Graceful error handling
  */
 function monitorConnectionStatus() {
   if (!firebaseDb) return;
@@ -496,15 +529,11 @@ function monitorConnectionStatus() {
           console.log('🟢 Connected to Firestore');
           updateConnectionStatus('ok', 'Online');
         }
-        // ✅ Jangan tampilkan "Offline" jika data tidak valid - biarkan status sebelumnya
       } catch (checkError) {
         console.warn('⚠️ Connection status check error (ignoring):', checkError);
-        // Jangan update UI pada parse error
       }
     }, function(error) {
-      // ✅ GRACEFUL: .info/connected errors are metadata issues, don't show to user
       console.warn('⚠️ Connection monitor listener error (metadata, ignoring):', error.message || error);
-      // ❌ JANGAN updateConnectionStatus('err', ...) di sini agar tidak misleading
     });
     
   } catch (error) {
@@ -990,3 +1019,4 @@ console.log('  • ✅ Google Drive init on login');
 console.log('  • 🔧 SDK compatibility fix for doc.exists (v3.8.3)');
 console.log('  • 🔧 Connection monitor improved - no false offline (v3.8.4)');
 console.log('  • 🔧 Persistence DISABLED - write langsung ke server (v3.8.5)');
+console.log('  • 🔐 Session timeout & no auto-login (v3.8.10)');
