@@ -213,9 +213,20 @@ const ENVIRONMENT = {
   }
 };
 
+// ============================================
+// 🔐 SESSION MANAGEMENT CONFIGURATION (BARU)
+// ============================================
+const SESSION_CONFIG = {
+  ENABLE_SESSION_TIMEOUT: true,      // ✅ Aktifkan fitur timeout session
+  TIMEOUT_HOURS: 4,                  // ⏰ Session expired setelah 4 jam tidak aktif
+  SESSION_KEY: 'fs_session_v3',      // 🔑 Key untuk localStorage
+  AUTO_LOGIN: false                  // ❌ Jangan auto-login walau Firebase masih auth
+};
+
 // Export untuk penggunaan di file lain
 window.APP_CONFIG = APP_CONFIG;
 window.ENVIRONMENT = ENVIRONMENT;
+window.SESSION_CONFIG = SESSION_CONFIG;  // ✅ Export SESSION_CONFIG
 
 console.log(`%c🚀 ${APP_CONFIG.app.name} v${APP_CONFIG.app.version}`,
   'color: #6366f1; font-size: 14px; font-weight: bold;');
@@ -225,3 +236,5 @@ console.log(`%c📁 Google Drive: Connected (Folder: ...${APP_CONFIG.googleDrive
   'color: #22c55e; font-size: 11px;');
 console.log(`%cMode: ${ENVIRONMENT.currentMode}`,
   'color: #10b981; font-size: 11px;');
+console.log(`%c🔐 Session: ${SESSION_CONFIG.ENABLE_SESSION_TIMEOUT ? 'Timeout ' + SESSION_CONFIG.TIMEOUT_HOURS + ' jam' : 'Disabled'} | Auto-login: ${SESSION_CONFIG.AUTO_LOGIN ? 'ON' : 'OFF'}`,
+  'color: #8b5cf6; font-size: 11px;');
