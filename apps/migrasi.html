@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <title>🔄 Firebase Migration</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Segoe UI', Arial, sans-serif;
+      background: linear-gradient(135deg, #1e293b, #0f172a);
+      color: #e2e8f0;
+      min-height: 100vh;
+      padding: 20px;
+    }
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+      background: #1e293b;
+      border-radius: 16px;
+      padding: 30px;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+    }
+    h1 {
+      color: #6366f1;
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .subtitle { color: #94a3b8; margin-bottom: 24px; font-size: 13px; }
+    
+    .project-info {
+      background: #0f172a;
+      border-radius: 12px;
+      padding: 16px;
+      margin-bottom: 20px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+    .project-card {
+      padding: 12px;
+      border-radius: 8px;
+      background: #1e293b;
+      border-left: 4px solid;
+    }
+    .project-card.source { border-color: #f59e0b; }
+    .project-card.target { border-color: #22c55e; }
+    .project-card .label { font-size: 11px; color: #94a3b8; margin-bottom: 4px; }
+    .project-card .value { font-weight: bold; color: #e2e8f0; font-size: 13px; }
+
+    .section-title {
+      font-size: 14px;
+      color: #6366f1;
+      margin: 24px 0 12px;
+      padding-bottom: 8px;
+      border-bottom: 1px solid #334155;
+    }
+
+    .checkbox-group {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 10px;
+    }
+    .checkbox-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 14px 16px;
+      background: #0f172a;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: all 0.2s;
+      border: 2px solid transparent;
+    }
+    .checkbox-item:hover {
+      background: #1a2332;
+      border-color: #6366f1;
+    }
+    .checkbox-item input[type="checkbox"] {
+      width: 18px;
+      height: 18px;
+      cursor: pointer;
+      accent-color: #6366f1;
+    }
+    .checkbox-item .info { flex: 1; }
+    .checkbox-item .info .name {
+      font-weight: bold;
+      color: #e2e8f0;
+      margin-bottom: 2px;
+    }
+    .checkbox-item .info .desc {
+      font-size: 11px;
+      color: #94a3b8;
+    }
+    .checkbox-item .count {
+      font-size: 11px;
+      color: #f59e0b;
+      font-weight: bold;
+    }
+
+    .options-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-top: 16px;
+    }
+    .option-card {
+      background: #0f172a;
+      padding: 12px;
+      border-radius: 8px;
+    }
+    .option-card label {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      cursor: pointer;
+      font-size: 13px;
+    }
+
+    .button-group {
+      display: flex;
+      gap: 10px;
+      margin-top: 24px;
+      flex-wrap: wrap;
+    }
+    button {
+      padding: 12px 20px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: bold;
+      transition: all 0.2s;
+    }
+    button:hover { transform: translateY(-1px); }
+    button:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+    
+    .btn-primary { background: linear-gradient(135deg, #6366f1, #8b5cf6); color: white; }
+    .btn-success { background: linear-gradient(135deg, #10b981, #059669); color: white; }
+    .btn-warning { background: linear-gradient(135deg, #f59e0b, #d97706); color: white; }
+    .btn-secondary { background: #334155; color: white; }
+
+    .progress-container {
+      margin-top: 20px;
+      background: #0f172a;
+      border-radius: 8px;
+      padding: 16px;
+      display: none;
+    }
+    .progress-container.active { display: block; }
+    .progress-bar {
+      height: 24px;
+      background: #1e293b;
+      border-radius: 12px;
+      overflow: hidden;
+    }
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #6366f1, #8b5cf6);
+      width: 0%;
+      transition: width 0.3s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-size: 11px;
+      font-weight: bold;
+    }
+
+    #migLog {
+      margin-top: 20px;
+      background: #0a0f1a;
+      border-radius: 8px;
+      padding: 16px;
+      height: 350px;
+      overflow-y: auto;
+      font-family: 'Consolas', 'Monaco', monospace;
+      font-size: 11px;
+      border: 1px solid #334155;
+    }
+    #migLog::-webkit-scrollbar { width: 8px; }
+    #migLog::-webkit-scrollbar-track { background: #1e293b; }
+    #migLog::-webkit-scrollbar-thumb { background: #6366f1; border-radius: 4px; }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 10px;
+      margin-top: 16px;
+    }
+    .stat-card {
+      background: #0f172a;
+      padding: 12px;
+      border-radius: 8px;
+      text-align: center;
+    }
+    .stat-card .num {
+      font-size: 22px;
+      font-weight: bold;
+      color: #6366f1;
+    }
+    .stat-card .lbl {
+      font-size: 10px;
+      color: #94a3b8;
+      text-transform: uppercase;
+      margin-top: 4px;
+    }
+
+    .scan-result {
+      background: #0f172a;
+      padding: 12px;
+      border-radius: 8px;
+      margin-bottom: 12px;
+      font-size: 12px;
+      color: #94a3b8;
+      display: none;
+    }
+    .scan-result.active { display: block; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🔄 Firebase Migration</h1>
+    <p class="subtitle">Pindahkan data antar project Firebase dalam 1 akun</p>
+
+    <div class="project-info">
+      <div class="project-card source">
+        <div class="label">📤 SOURCE (Lama)</div>
+        <div class="value">ai-devender-7b55c</div>
+      </div>
+      <div class="project-card target">
+        <div class="label">📥 TARGET (Baru)</div>
+        <div class="value">pencatatan-voucher-perusahaan</div>
+      </div>
+    </div>
+
+    <div id="scanResult" class="scan-result"></div>
+
+    <div class="section-title">📦 Pilih Data yang Ingin Dipindahkan</div>
+    <div class="checkbox-group" id="collectionList">
+      <div style="text-align:center; padding:20px; color:#94a3b8;">
+        Klik "🔍 Scan Source" untuk melihat collection yang tersedia
+      </div>
+    </div>
+
+    <div class="section-title">⚙️ Opsi Migrasi</div>
+    <div class="options-row">
+      <div class="option-card">
+        <label>
+          <input type="checkbox" id="optPreserveId" checked>
+          <span>Pertahankan Document ID asli</span>
+        </label>
+      </div>
+      <div class="option-card">
+        <label>
+          <input type="checkbox" id="optAddMetadata" checked>
+          <span>Tambah metadata migration</span>
+        </label>
+      </div>
+      <div class="option-card">
+        <label>
+          <input type="checkbox" id="optOverwrite">
+          <span>Overwrite jika ada</span>
+        </label>
+      </div>
+      <div class="option-card">
+        <label>
+          <input type="checkbox" id="optDryRun">
+          <span>🧪 Dry Run (simulasi)</span>
+        </label>
+      </div>
+    </div>
+
+    <div class="button-group">
+      <button class="btn-secondary" id="btnScan">🔍 Scan Source</button>
+      <button class="btn-primary" id="btnMigrate" disabled>🚀 Mulai Migrasi</button>
+      <button class="btn-success" id="btnVerify" disabled>✅ Verifikasi</button>
+      <button class="btn-warning" id="btnReport" disabled>📥 Download Report</button>
+      <button class="btn-secondary" id="btnClear">🗑️ Clear Log</button>
+    </div>
+
+    <div class="progress-container" id="progressContainer">
+      <div class="progress-bar">
+        <div class="progress-fill" id="progressFill">0%</div>
+      </div>
+      <div style="margin-top:8px; font-size:11px; color:#94a3b8; text-align:center;" id="progressText">
+        Menunggu...
+      </div>
+    </div>
+
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="num" id="statTotal">0</div>
+        <div class="lbl">Total Docs</div>
+      </div>
+      <div class="stat-card">
+        <div class="num" style="color:#10b981" id="statSuccess">0</div>
+        <div class="lbl">Berhasil</div>
+      </div>
+      <div class="stat-card">
+        <div class="num" style="color:#ef4444" id="statFailed">0</div>
+        <div class="lbl">Gagal</div>
+      </div>
+      <div class="stat-card">
+        <div class="num" style="color:#f59e0b" id="statSkipped">0</div>
+        <div class="lbl">Dilewati</div>
+      </div>
+    </div>
+
+    <div id="migLog">
+      <div style="color:#6366f1;">📋 Migration log akan ditampilkan di sini...</div>
+    </div>
+  </div>
+
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+  
+  <!-- Migration Script -->
+  <script src="migrasi.js"></script>
+</body>
+</html>
