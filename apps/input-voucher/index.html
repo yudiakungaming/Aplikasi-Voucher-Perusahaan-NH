@@ -858,7 +858,7 @@
       }
     }
 
-    /* ✅ Back to Portal Button Styles (DITAMBAHKAN) */
+    /* ✅ Back to Portal Button Styles (DITAMBAHKAN - SELALU TERLIHAT) */
     #backToPortal a {
       display: inline-flex;
       align-items: center;
@@ -939,8 +939,8 @@
               <div class="status-dot loading" id="sDot"></div>
               <span class="text-[11px] text-[--muted]" id="sText">Menghubungkan...</span>
             </div>
-            <!-- ✅ Tombol Kembali ke Portal (DITAMBAHKAN) -->
-            <div id="backToPortal" style="display:none">
+            <!-- ✅ Tombol Kembali ke Portal (SELALU TERLIHAT - tidak perlu login) -->
+            <div id="backToPortal">
               <a href="../" class="flex items-center gap-1">
                 🏠 Kembali ke Portal
               </a>
@@ -1781,34 +1781,6 @@
     }
     
     console.log('%c🖨️ PDF cleanup helper loaded', 'color: #22c55e; font-size: 11px;');
-  </script>
-
-  <!-- ✅ Show/Hide Back Button based on auth state -->
-  <script>
-    // Tampilkan tombol "Kembali ke Portal" hanya setelah user login
-    document.addEventListener('DOMContentLoaded', function() {
-      const backBtn = document.getElementById('backToPortal');
-      const hdrAuth = document.getElementById('hdrAuth');
-      
-      // Fungsi untuk toggle visibility
-      function updateBackButton() {
-        if (hdrAuth && hdrAuth.style.display !== 'none') {
-          // User sudah login → tampilkan back button
-          if (backBtn) backBtn.style.display = 'block';
-        } else {
-          // Guest mode → sembunyikan
-          if (backBtn) backBtn.style.display = 'none';
-        }
-      }
-      
-      // Initial check
-      updateBackButton();
-      
-      // Listen untuk perubahan auth state (jika app.js memicu event)
-      if (typeof window.addEventListener === 'function') {
-        window.addEventListener('authStateChanged', updateBackButton);
-      }
-    });
   </script>
 
 </body>
