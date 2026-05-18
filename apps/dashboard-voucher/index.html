@@ -5,6 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard Voucher - FinanceSync Pro</title>
     
+    <!-- 📱 PWA Meta Tags (Opsional - jika ingin dashboard juga installable) -->
+    <meta name="application-name" content="FinanceSync Dashboard">
+    <meta name="apple-mobile-web-app-title" content="FinanceSync">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="theme-color" content="#667eea">
+    
     <link rel="stylesheet" href="style.css">
     
     <link rel="icon" href="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📊</text></svg>">
@@ -20,6 +26,48 @@
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
+
+    <!-- ✅ CSS Tambahan untuk Tombol Back to Portal -->
+    <style>
+        /* Back to Portal Button - Dashboard Specific */
+        .back-to-portal {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 12px;
+            background: rgba(99, 102, 241, 0.1);
+            border: 1px solid rgba(99, 102, 241, 0.2);
+            border-radius: 8px;
+            color: #6366f1;
+            text-decoration: none;
+            font-size: 12px;
+            font-weight: 500;
+            transition: all 0.2s ease;
+            margin-left: 8px;
+        }
+        .back-to-portal:hover {
+            background: rgba(99, 102, 241, 0.2);
+            border-color: rgba(99, 102, 241, 0.4);
+            transform: translateX(-2px);
+            color: #4f46e5;
+        }
+        .back-to-portal:active {
+            transform: translateX(0);
+        }
+        
+        /* Responsive: Stack header actions on mobile */
+        @media (max-width: 768px) {
+            .header-actions {
+                flex-wrap: wrap;
+                gap: 8px;
+            }
+            .back-to-portal {
+                margin-left: 0;
+                width: 100%;
+                justify-content: center;
+            }
+        }
+    </style>
 </head>
 <body>
     <div class="container">
@@ -27,8 +75,14 @@
             <h1>📊 Dashboard Voucher</h1>
             <p>FinanceSync Pro • Rekap Data Real-time</p>
             <div class="header-actions">
-                <!-- ✅ UPDATED: Link ke folder input-voucher -->
+                <!-- ✅ Link ke Input App (SUDAH BENAR: path relatif) -->
                 <a href="../input-voucher/" class="back-link" target="_blank">← Aplikasi Input</a>
+                
+                <!-- ✅ Tombol Kembali ke Portal (DITAMBAHKAN) -->
+                <a href="../" class="back-to-portal" title="Kembali ke Halaman Utama Portal">
+                    🏠 Portal Utama
+                </a>
+                
                 <button id="themeToggle" class="icon-btn" title="Toggle Dark Mode">🌓</button>
                 <span id="offlineBadge" class="offline-badge" style="display:none;">📴 Offline</span>
             </div>
@@ -200,6 +254,19 @@
                 });
             });
         }
+    </script>
+
+    <!-- ✅ Optional: Show/Hide Back Button based on auth state (jika dashboard punya auth) -->
+    <script>
+        // Jika dashboard memiliki sistem login sendiri, uncomment kode di bawah:
+        /*
+        document.addEventListener('DOMContentLoaded', function() {
+            const backBtn = document.querySelector('.back-to-portal');
+            // Contoh: tampilkan tombol hanya jika user sudah login
+            // if (window.isAuthenticated) { backBtn.style.display = 'inline-flex'; }
+            // else { backBtn.style.display = 'none'; }
+        });
+        */
     </script>
 </body>
 </html>
