@@ -27,7 +27,7 @@
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
 
-    <!-- ✅ CSS Tambahan untuk Tombol Back to Portal -->
+    <!-- ✅ CSS untuk Tombol Back to Portal -->
     <style>
         /* Back to Portal Button - Dashboard Specific */
         .back-to-portal {
@@ -43,7 +43,6 @@
             font-size: 12px;
             font-weight: 500;
             transition: all 0.2s ease;
-            margin-left: 8px;
         }
         .back-to-portal:hover {
             background: rgba(99, 102, 241, 0.2);
@@ -62,7 +61,6 @@
                 gap: 8px;
             }
             .back-to-portal {
-                margin-left: 0;
                 width: 100%;
                 justify-content: center;
             }
@@ -75,10 +73,7 @@
             <h1>📊 Dashboard Voucher</h1>
             <p>FinanceSync Pro • Rekap Data Real-time</p>
             <div class="header-actions">
-                <!-- ✅ Link ke Input App (SUDAH BENAR: path relatif) -->
-                <a href="../input-voucher/" class="back-link" target="_blank">← Aplikasi Input</a>
-                
-                <!-- ✅ Tombol Kembali ke Portal (FIXED: href="/" ke root) -->
+                <!-- ✅ Tombol Kembali ke Portal -->
                 <a href="/" class="back-to-portal" title="Kembali ke Halaman Utama Portal">
                     🏠 Portal Utama
                 </a>
@@ -242,7 +237,8 @@
         </div>
     </div>
 
-    <script src="script.js?v=4.1"></script>
+    <!-- ✅ FIX: Cache buster version updated to v=4.6 -->
+    <script src="script.js?v=4.6"></script>
     
     <script>
         if ('serviceWorker' in navigator) {
@@ -254,19 +250,6 @@
                 });
             });
         }
-    </script>
-
-    <!-- ✅ Optional: Show/Hide Back Button based on auth state (jika dashboard punya auth) -->
-    <script>
-        // Jika dashboard memiliki sistem login sendiri, uncomment kode di bawah:
-        /*
-        document.addEventListener('DOMContentLoaded', function() {
-            const backBtn = document.querySelector('.back-to-portal');
-            // Contoh: tampilkan tombol hanya jika user sudah login
-            // if (window.isAuthenticated) { backBtn.style.display = 'inline-flex'; }
-            // else { backBtn.style.display = 'none'; }
-        });
-        */
     </script>
 </body>
 </html>
