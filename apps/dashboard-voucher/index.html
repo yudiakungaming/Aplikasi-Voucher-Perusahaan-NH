@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Voucher - FinanceSync Pro</title>
+    
+    <link rel="stylesheet" href="style.css">
+    
+    <link rel="icon" href="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📊</text></svg>">
+    
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
+    
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#667eea">
+    
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📊 Dashboard Voucher</h1>
+            <p>FinanceSync Pro • Rekap Data Real-time</p>
+            <div class="header-actions">
+                <a href="https://voucher-nmsa.up.railway.app" class="back-link" target="_blank">← Aplikasi Input</a>
+                <button id="themeToggle" class="icon-btn" title="Toggle Dark Mode">🌓</button>
+                <span id="offlineBadge" class="offline-badge" style="display:none;">📴 Offline</span>
+            </div>
+        </div>
+        
+        <div class="stats">
+            <div class="stat-card">
+                <h3>📋 Total Voucher</h3>
+                <div class="number" id="totalVoucher">-</div>
+            </div>
+            <div class="stat-card total">
+                <h3>💰 Total Nominal</h3>
+                <div class="number" id="totalNominal">-</div>
+            </div>
+            <div class="stat-card">
+                <h3>✅ Lunas</h3>
+                <div class="number" id="totalLunas">-</div>
+            </div>
+            <div class="stat-card">
+                <h3>⏳ Belum Lunas</h3>
+                <div class="number" id="totalBelum">-</div>
+            </div>
+        </div>
+        
+        <div class="charts-container" id="chartsContainer" style="display: none;">
+            <div class="chart-wrapper">
+                <canvas id="statusChart"></canvas>
+            </div>
+            <div class="chart-wrapper">
+                <canvas id="companyChart"></canvas>
+            </div>
+            <div class="chart-wrapper chart-wide">
+                <canvas id="trendChart"></canvas>
+            </div>
+        </div>
+        
+        <div class="controls-bar">
+            <div class="control-group">
+                <label for="searchInput">🔍 Cari</label>
+                <input type="text" id="searchInput" placeholder="Cari invoice, keterangan, lokasi...">
+            </div>
+            
+            <div class="control-group">
+                <label for="companyFilter">🏢 Perusahaan</label>
+                <select id="companyFilter">
+                    <option value="all">Semua</option>
+                </select>
+            </div>
+            
+            <div class="control-group">
+                <label>✅ Status</label>
+                <div class="multi-select">
+                    <label class="checkbox-label">
+                        <input type="checkbox" class="status-filter" value="Lunas" checked>
+                        <span>Lunas</span>
+                    </label>
+                    <label class="checkbox-label">
+                        <input type="checkbox" class="status-filter" value="Belum Lunas" checked>
+                        <span>Belum Lunas</span>
+                    </label>
+                </div>
+            </div>
+            
+            <div class="control-group">
+                <label>🔢 Range Nominal</label>
+                <div class="range-inputs">
+                    <input type="number" id="nominalMin" placeholder="Min" class="nominal-filter">
+                    <span>-</span>
+                    <input type="number" id="nominalMax" placeholder="Max" class="nominal-filter">
+                </div>
+            </div>
+            
+            <div class="control-group">
+                <label>📅 Quick Period</label>
+                <div class="quick-periods">
+                    <button class="period-btn" data-period="today">Hari Ini</button>
+                    <button class="period-btn" data-period="week">Minggu Ini</button>
+                    <button class="period-btn active" data-period="month">Bulan Ini</button>
+                    <button class="period-btn" data-period="year">Tahun Ini</button>
+                    <button class="period-btn" data-period="custom">Custom</button>
+                </div>
+            </div>
+            
+            <div class="control-group" id="customDateGroup">
+                <label for="dateFrom">📅 Periode Custom</label>
+                <div class="date-range">
+                    <input type="date" id="dateFrom" title="Tanggal mulai">
+                    <span>s/d</span>
+                    <input type="date" id="dateTo" title="Tanggal akhir">
+                </div>
+            </div>
+            
+            <div class="control-group actions">
+                <button id="syncAllBtn" class="btn btn-warning" style="display:none;">🔄 Sync All</button>
+                <button id="refreshBtn" class="btn btn-primary" title="Sinkronisasi data terbaru">🔄 Refresh</button>
+                <button id="exportPdfBtn" class="btn btn-secondary">📄 Export PDF</button>
+                <button id="exportBtn" class="btn btn-secondary">📥 Export CSV</button>
+                <label class="toggle-switch" title="Auto-refresh setiap 5 menit">
+                    <input type="checkbox" id="autoRefresh">
+                    <span class="toggle-slider"></span>
+                    <span class="toggle-label">Auto</span>
+                </label>
+            </div>
+        </div>
+        
+        <div id="syncNotification" class="sync-notification" style="display: none;">
+            <span id="syncMessage"></span>
+            <button id="syncCloseBtn" class="close-btn">&times;</button>
+        </div>
+        
+        <div class="content">
+            <h2>
+                <span>📋 Detail Data Voucher</span>
+                <span id="filteredCount" class="badge">0 data</span>
+            </h2>
+            
+            <div id="loading" class="loading">⏳ Loading data dari Firestore...</div>
+            <div id="error" class="error" style="display: none;"></div>
+            <div id="emptyState" class="empty-state" style="display: none;">
+                <p>Tidak ada data yang sesuai dengan filter</p>
+                <button class="btn btn-small" onclick="clearFilters()">🔄 Reset Filter</button>
+            </div>
+            
+            <div class="pagination-controls" id="paginationTop" style="display:none;">
+                <span id="paginationInfo">Halaman 1 dari 1</span>
+                <div class="pagination-buttons">
+                    <button class="btn btn-small" id="firstPage" disabled>⏮ Pertama</button>
+                    <button class="btn btn-small" id="prevPage" disabled>◀ Sebelumnya</button>
+                    <select id="pageSize" class="page-size-select">
+                        <option value="25">25 / halaman</option>
+                        <option value="50" selected>50 / halaman</option>
+                        <option value="100">100 / halaman</option>
+                        <option value="all">Semua</option>
+                    </select>
+                    <button class="btn btn-small" id="nextPage" disabled>Selanjutnya ▶</button>
+                    <button class="btn btn-small" id="lastPage" disabled>Terakhir ⏭</button>
+                </div>
+            </div>
+            
+            <div id="tableContainer"></div>
+            
+            <div class="pagination-controls" id="paginationBottom" style="display:none;">
+                <span id="paginationInfoBottom">Halaman 1 dari 1</span>
+                <div class="pagination-buttons">
+                    <button class="btn btn-small" id="firstPageBottom" disabled>⏮ Pertama</button>
+                    <button class="btn btn-small" id="prevPageBottom" disabled>◀ Sebelumnya</button>
+                    <button class="btn btn-small" id="nextPageBottom" disabled>Selanjutnya ▶</button>
+                    <button class="btn btn-small" id="lastPageBottom" disabled>Terakhir ⏭</button>
+                </div>
+            </div>
+        </div>
+        
+        <div class="footer">
+            <p>FinanceSync Pro Dashboard • Last sync: <span id="lastSync">-</span> • 
+               <a href="#" id="manualSyncLink">Sync Manual</a> • 
+               <span id="cacheStatus">💾 Cache: Aktif</span></p>
+        </div>
+    </div>
+
+    <script src="script.js?v=4.1"></script>
+    
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('sw.js').then((registration) => {
+                    console.log('✅ Service Worker registered:', registration.scope);
+                }).catch((err) => {
+                    console.log('❌ Service Worker failed:', err);
+                });
+            });
+        }
+    </script>
+</body>
+</html>
