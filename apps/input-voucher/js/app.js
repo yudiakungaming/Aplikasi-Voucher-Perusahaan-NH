@@ -19,6 +19,7 @@
  *   ✅ NEW v3.8.7: PDF download EXACT 2 pages + 6 signatures from Firestore
  *   ✅ NEW v3.8.8: PDF LAYOUT FIX - Table-based HTML for reliable rendering
  *   ✅ NEW v3.8.9: PDF ULTRA-FIX - Exact A4 dimensions + compact styling
+ *   ✅ NEW v3.8.10: Session timeout & no auto-login integration
  */
 
 // ==========================================
@@ -1142,7 +1143,7 @@ window.selectCompany = function(id, name, icon, color) {
 };
 
 // ==========================================
-// 🔐 LOGIN & LOGOUT HANDLERS (SMART VERSION)
+// 🔐 LOGIN & LOGOUT HANDLERS (SMART VERSION + SESSION)
 // ==========================================
 
 window.doLogin = async function() {
@@ -1238,6 +1239,16 @@ window.doLogin = async function() {
 
     await loginUser(email, password);
 
+    // 🔐 CREATE SESSION AFTER SUCCESSFUL LOGIN (NEW v3.8.10)
+    const sessionManager = typeof window.sessionManager !== 'undefined' ? window.sessionManager : null;
+    if (sessionManager && typeof firebase !== 'undefined' && firebase.auth()?.currentUser) {
+      const user = firebase.auth().currentUser;
+      const selectedCompany = StorageUtils.get('financesync_selectedCompany');
+      
+      sessionManager.set(user.uid, selectedCompany?.id || null);
+      console.log('🔐 Session created for user:', user.email);
+    }
+
     if (needsCompanySetup) {
       if (typeof StorageUtils !== 'undefined') {
         StorageUtils.set('financesync_needsFirstCompany', true);
@@ -1252,6 +1263,13 @@ window.doLogin = async function() {
 
 window.doLogout = async function() {
   if (confirm('Apakah Anda yakin ingin logout?')) {
+    // 🔐 CLEAR SESSION BEFORE LOGOUT (NEW v3.8.10)
+    const sessionManager = typeof window.sessionManager !== 'undefined' ? window.sessionManager : null;
+    if (sessionManager) {
+      sessionManager.clear();
+      console.log('🗑️ Session cleared on logout');
+    }
+    
     await logoutUser();
     window.updateAuthUI?.();
   }
@@ -1443,7 +1461,7 @@ window.doLogout = doLogout;
 window.updateAuthUI = window.updateAuthUI;
 window.initAuthListener = window.initAuthListener;
 
-console.log('%c🎮 Main App module loaded v3.8.9 (PDF ULTRA-FIXED)', 'color: #8b5cf6; font-size: 11px; font-weight: bold;');
+console.log('%c🎮 Main App module loaded v3.8.10 (Session Management)', 'color: #8b5cf6; font-size: 11px; font-weight: bold;');
 console.log('%c🔧 All Fixes Applied:', 'color: #22c55e; font-size: 10px;');
 console.log('  ✅ Missing catch/finally after try → FIXED');
 console.log('  ✅ Mismatched curly braces in doLogin → FIXED');
@@ -1458,3 +1476,4 @@ console.log('  ✅ NEW: 2-Page PDF Output (Formulir HO + Bukti Kas/Bank)');
 console.log('  ✅ NEW v3.8.7: PDF download EXACT 2 pages + 6 signatures from Firestore');
 console.log('  ✅ NEW v3.8.8: PDF LAYOUT FIX - Table-based HTML for reliable rendering');
 console.log('  ✅ NEW v3.8.9: PDF ULTRA-FIX - Exact A4 dimensions + compact styling + page enforcement');
+console.log('  ✅ NEW v3.8.10: Session timeout & no auto-login integration');
