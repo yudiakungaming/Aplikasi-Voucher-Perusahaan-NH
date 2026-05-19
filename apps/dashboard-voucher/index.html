@@ -135,6 +135,10 @@
                 <button id="refreshBtn" class="btn btn-primary" title="Sinkronisasi data terbaru">🔄 Refresh</button>
                 <button id="exportPdfBtn" class="btn btn-secondary">📄 Export PDF</button>
                 <button id="exportBtn" class="btn btn-secondary">📥 Export CSV</button>
+                <!-- ✅ NEW: Tombol Lihat Spreadsheet -->
+                <button id="viewSpreadsheetBtn" class="btn btn-secondary" title="Lihat Data Spreadsheet">
+                    📊 Spreadsheet
+                </button>
                 <label class="toggle-switch" title="Auto-refresh setiap 5 menit">
                     <input type="checkbox" id="autoRefresh">
                     <span class="toggle-slider"></span>
@@ -360,8 +364,36 @@
         </button>
     </div>
 
-    <!-- ✅ FIX: Cache buster version updated to v=4.8 -->
-    <script src="script.js?v=4.8"></script>
+    <!-- ✅ MODAL SPREADSHEET VIEW - TAMPILAN DATA SEPERTI GOOGLE SHEETS -->
+    <div id="spreadsheetModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 10000; overflow: auto;">
+        <div style="background: white; margin: 20px auto; padding: 20px; border-radius: 12px; max-width: 98%; width: 1400px; max-height: 90vh; display: flex; flex-direction: column;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; padding-bottom: 12px; border-bottom: 2px solid #eee;">
+                <h3 style="margin: 0; color: #333; font-size: 1.3em;">📊 Data Spreadsheet - FinanceSync Pro</h3>
+                <button onclick="closeSpreadsheetModal()" style="background: #ef4444; color: white; border: none; width: 32px; height: 32px; border-radius: 50%; cursor: pointer; font-size: 18px; display: flex; align-items: center; justify-content: center; transition: background 0.2s;">&times;</button>
+            </div>
+            
+            <div id="spreadsheetLoading" style="text-align: center; padding: 50px; color: #667eea; font-size: 1.1em;">
+                ⏳ Loading data dari spreadsheet...
+            </div>
+            
+            <div id="spreadsheetContent" style="display: none; flex: 1; overflow: auto;">
+                <!-- Tabel spreadsheet akan dirender di sini via JavaScript -->
+            </div>
+            
+            <div style="margin-top: 15px; padding-top: 12px; border-top: 1px solid #eee; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+                <button onclick="refreshSpreadsheetData()" class="btn btn-primary" style="padding: 8px 16px; font-size: 0.9em;">
+                    🔄 Refresh Data
+                </button>
+                <span id="spreadsheetInfo" style="color: #666; font-size: 0.9em;"></span>
+                <button onclick="exportSpreadsheetToCSV()" class="btn btn-secondary" style="padding: 8px 16px; font-size: 0.9em;">
+                    📥 Export CSV
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ✅ FIX: Cache buster version updated to v=4.9 -->
+    <script src="script.js?v=4.9"></script>
     
     <script>
         if ('serviceWorker' in navigator) {
@@ -381,7 +413,7 @@
                 const date = new Date(tanggal);
                 return date.toLocaleDateString('id-ID', { 
                     year: 'numeric', 
-                    month: 'long', 
+                    month: 'short', 
                     day: 'numeric' 
                 });
             } catch(e) {
@@ -443,10 +475,10 @@
             
             // Tampilkan modal
             document.getElementById('voucherPrintModal').classList.add('active');
-            document.body.style.overflow = 'hidden'; // Prevent scroll behind modal
+            document.body.style.overflow = 'hidden';
         }
         
-        // ✅ Fungsi untuk menutup modal
+        // ✅ Fungsi untuk menutup modal voucher
         function closeVoucherModal() {
             document.getElementById('voucherPrintModal').classList.remove('active');
             document.body.style.overflow = '';
@@ -472,17 +504,214 @@
             return n.toString();
         }
         
-        // ✅ Tutup modal jika klik di luar area konten
+        // ✅ Tutup modal voucher jika klik di luar area konten
         document.getElementById('voucherPrintModal').addEventListener('click', function(e) {
             if (e.target === this) {
                 closeVoucherModal();
             }
         });
         
-        // ✅ Tutup modal dengan tombol ESC
+        // ✅ Tutup modal voucher dengan tombol ESC
         document.addEventListener('keydown', function(e) {
             if (e.key === 'Escape') {
                 closeVoucherModal();
+            }
+        });
+        
+        // ═══════════════════════════════════════════════════════
+        // 📊 SPREADSHEET MODAL FUNCTIONS
+        // ═══════════════════════════════════════════════════════
+        
+        function openSpreadsheetModal() {
+            const modal = document.getElementById('spreadsheetModal');
+            const loading = document.getElementById('spreadsheetLoading');
+            const content = document.getElementById('spreadsheetContent');
+            
+            if (modal) {
+                modal.style.display = 'block';
+                document.body.style.overflow = 'hidden';
+                
+                // Show loading
+                if (loading) loading.style.display = 'block';
+                if (content) {
+                    content.style.display = 'none';
+                    content.innerHTML = '';
+                }
+                
+                // Fetch and render data
+                renderSpreadsheetTable();
+            }
+        }
+        
+        function closeSpreadsheetModal() {
+            const modal = document.getElementById('spreadsheetModal');
+            if (modal) {
+                modal.style.display = 'none';
+                document.body.style.overflow = '';
+            }
+        }
+        
+        function refreshSpreadsheetData() {
+            renderSpreadsheetTable();
+        }
+        
+        async function renderSpreadsheetTable() {
+            const loading = document.getElementById('spreadsheetLoading');
+            const content = document.getElementById('spreadsheetContent');
+            const info = document.getElementById('spreadsheetInfo');
+            
+            try {
+                // Fetch data dari Apps Script
+                const response = await fetch(APPS_SCRIPT_URL());
+                const result = await response.json();
+                
+                if (!result?.success) throw new Error(result?.message || 'Failed to fetch data');
+                
+                const data = normalizeData(result);
+                
+                // Render tabel
+                const tableHTML = createSpreadsheetTable(data);
+                
+                if (loading) loading.style.display = 'none';
+                if (content) {
+                    content.innerHTML = tableHTML;
+                    content.style.display = 'block';
+                }
+                if (info) {
+                    info.textContent = `${data.length} data • Updated: ${new Date().toLocaleString('id-ID')}`;
+                }
+                
+            } catch (error) {
+                console.error('❌ Spreadsheet error:', error);
+                if (loading) {
+                    loading.style.display = 'block';
+                    loading.innerHTML = `❌ Gagal memuat data: ${error.message}`;
+                    loading.style.color = '#ef4444';
+                }
+            }
+        }
+        
+        function createSpreadsheetTable(data) {
+            if (data.length === 0) {
+                return '<div style="text-align: center; padding: 50px; color: #666;">📭 Tidak ada data untuk ditampilkan</div>';
+            }
+            
+            // Define columns sesuai dengan struktur spreadsheet
+            const columns = [
+                { key: 'no', label: 'NO', class: 'col-no', render: (row, index) => index + 1 },
+                { key: 'tanggal', label: 'TANGGAL', class: 'col-tanggal', render: (row) => formatTanggalID(row.tanggal) },
+                { key: 'no_invoice', label: 'NO INVOICE', class: 'col-invoice' },
+                { key: 'company', label: 'COMPANY', class: 'col-company', render: (row) => (row.company || '-').toUpperCase() },
+                { key: 'jenis', label: 'JENIS', class: 'col-jenis' },
+                { key: 'lokasi', label: 'LOKASI', class: 'col-lokasi' },
+                { key: 'isi_invoice', label: 'KETERANGAN', class: 'col-keterangan' },
+                { key: 'nominal', label: 'NOMINAL', class: 'col-nominal', render: (row) => formatRupiah(row.nominal) },
+                { key: 'status', label: 'STATUS', class: 'col-status', render: (row) => renderSpreadsheetStatus(row.status) },
+                { key: 'dibayarkanKepada', label: 'DIBAYARKAN', class: 'col-dibayarkan' },
+                { key: 'file_url', label: 'FILE', class: 'col-file', render: (row) => renderSpreadsheetFileLink(row) }
+            ];
+            
+            // Build table header
+            const headerHTML = columns.map(col => 
+                `<th class="${col.class || ''}">${col.label}</th>`
+            ).join('');
+            
+            // Build table body
+            const rowsHTML = data.map((row, index) => {
+                const cellsHTML = columns.map(col => {
+                    const value = col.render ? col.render(row, index) : (row[col.key] ?? '-');
+                    return `<td class="${col.class || ''}">${value}</td>`;
+                }).join('');
+                
+                return `<tr>${cellsHTML}</tr>`;
+            }).join('');
+            
+            return `
+                <table class="spreadsheet-table">
+                    <thead>
+                        <tr>${headerHTML}</tr>
+                    </thead>
+                    <tbody>
+                        ${rowsHTML}
+                    </tbody>
+                </table>
+            `;
+        }
+        
+        function renderSpreadsheetStatus(status) {
+            const statusClass = status === 'Lunas' ? 'lunas' : 'belum';
+            const statusText = status || 'Belum Lunas';
+            return `<span class="spreadsheet-status ${statusClass}">${statusText}</span>`;
+        }
+        
+        function renderSpreadsheetFileLink(row) {
+            if (!row.file_url || !row.file_url.startsWith('http')) {
+                return '<span style="color: #999;">-</span>';
+            }
+            
+            const fileName = row.file_name || 'Lihat File';
+            return `
+                <a href="${escapeHtml(row.file_url)}" target="_blank" rel="noopener" class="spreadsheet-file-link">
+                    📎 ${escapeHtml(fileName)}
+                </a>
+            `;
+        }
+        
+        function exportSpreadsheetToCSV() {
+            const content = document.getElementById('spreadsheetContent');
+            if (!content || content.style.display === 'none') {
+                alert('Silakan load data terlebih dahulu');
+                return;
+            }
+            
+            // Re-fetch data for export
+            fetch(APPS_SCRIPT_URL())
+                .then(res => res.json())
+                .then(result => {
+                    if (!result?.success) throw new Error('Failed to fetch data');
+                    
+                    const data = normalizeData(result);
+                    const columns = ['tanggal', 'no_invoice', 'company', 'jenis', 'lokasi', 'isi_invoice', 'nominal', 'status', 'dibayarkanKepada', 'file_url'];
+                    const headers = ['Tanggal', 'No Invoice', 'Company', 'Jenis', 'Lokasi', 'Keterangan', 'Nominal', 'Status', 'Dibayarkan', 'Link File'];
+                    
+                    let csv = headers.join(',') + '\n';
+                    data.forEach(row => {
+                        const values = columns.map(col => {
+                            let val = row[col] ?? '';
+                            if (col === 'nominal') val = parseFloat(val) || 0;
+                            if (String(val).includes(',') || String(val).includes('"')) {
+                                val = `"${String(val).replace(/"/g, '""')}"`;
+                            }
+                            return val;
+                        });
+                        csv += values.join(',') + '\n';
+                    });
+                    
+                    const blob = new Blob(['\ufeff' + csv], { type: 'text/csv;charset=utf-8;' });
+                    const url = URL.createObjectURL(blob);
+                    const link = document.createElement('a');
+                    link.href = url;
+                    link.download = `spreadsheet-export-${new Date().toISOString().slice(0,10)}.csv`;
+                    link.click();
+                    URL.revokeObjectURL(url);
+                })
+                .catch(err => {
+                    console.error('Export error:', err);
+                    alert('Gagal export CSV: ' + err.message);
+                });
+        }
+        
+        // Close spreadsheet modal when clicking outside
+        document.getElementById('spreadsheetModal')?.addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeSpreadsheetModal();
+            }
+        });
+        
+        // Close modal with ESC key
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                closeSpreadsheetModal();
             }
         });
     </script>
