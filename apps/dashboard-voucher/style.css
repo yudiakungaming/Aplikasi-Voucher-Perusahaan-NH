@@ -1,8 +1,9 @@
 /* ═══════════════════════════════════════════════════════
-   FINANCE SYNC PRO - DASHBOARD STYLES (v4.6)
+   FINANCE SYNC PRO - DASHBOARD STYLES (v4.7)
    ✅ Charts, Pagination, PWA, Advanced Filters
    ✅ Voucher Print Modal (2 Pages)
    ✅ Fixed: 2-column signature for Page 1 (HO Form)
+   ✅ NEW: Spreadsheet View Styles
    ═══════════════════════════════════════════════════════ */
 
 /* ===== CSS VARIABLES (untuk Dark Mode) ===== */
@@ -1008,6 +1009,192 @@ body {
     border-color: rgba(99, 102, 241, 0.4);
     transform: translateX(-2px);
     color: #4f46e5;
+}
+
+/* ═══════════════════════════════════════════════════════
+   📊 SPREADSHEET VIEW STYLES (NEW)
+   ═══════════════════════════════════════════════════════ */
+
+.spreadsheet-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.9em;
+    background: white;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.spreadsheet-table thead {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+
+.spreadsheet-table th {
+    padding: 12px 10px;
+    text-align: left;
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 0.85em;
+    letter-spacing: 0.5px;
+    border: 1px solid rgba(255,255,255,0.2);
+    white-space: nowrap;
+}
+
+.spreadsheet-table tbody tr {
+    transition: background 0.2s;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.spreadsheet-table tbody tr:hover {
+    background: rgba(102, 126, 234, 0.05);
+}
+
+.spreadsheet-table tbody tr:nth-child(even) {
+    background: #f9fafb;
+}
+
+.spreadsheet-table tbody tr:nth-child(even):hover {
+    background: rgba(102, 126, 234, 0.1);
+}
+
+.spreadsheet-table td {
+    padding: 10px;
+    border: 1px solid #e5e7eb;
+    vertical-align: top;
+}
+
+.spreadsheet-table .col-no {
+    width: 50px;
+    text-align: center;
+    font-weight: 600;
+    color: #667eea;
+}
+
+.spreadsheet-table .col-tanggal {
+    width: 110px;
+    white-space: nowrap;
+}
+
+.spreadsheet-table .col-invoice {
+    width: 170px;
+    font-weight: 500;
+}
+
+.spreadsheet-table .col-company {
+    width: 110px;
+    text-transform: uppercase;
+}
+
+.spreadsheet-table .col-jenis {
+    width: 140px;
+}
+
+.spreadsheet-table .col-lokasi {
+    width: 75px;
+    text-align: center;
+}
+
+.spreadsheet-table .col-keterangan {
+    min-width: 220px;
+}
+
+.spreadsheet-table .col-nominal {
+    width: 140px;
+    text-align: right;
+    font-weight: 600;
+    color: #059669;
+}
+
+.spreadsheet-table .col-status {
+    width: 110px;
+    text-align: center;
+}
+
+.spreadsheet-table .col-dibayarkan {
+    width: 140px;
+}
+
+.spreadsheet-table .col-file {
+    width: 90px;
+    text-align: center;
+}
+
+/* Status badges dalam spreadsheet */
+.spreadsheet-status {
+    display: inline-block;
+    padding: 4px 12px;
+    border-radius: 12px;
+    font-size: 0.8em;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.spreadsheet-status.lunas {
+    background: #d1fae5;
+    color: #065f46;
+}
+
+.spreadsheet-status.belum {
+    background: #fee2e2;
+    color: #991b1b;
+}
+
+/* File link dalam spreadsheet */
+.spreadsheet-file-link {
+    color: #667eea;
+    text-decoration: none;
+    font-weight: 500;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px 8px;
+    border-radius: 4px;
+    transition: background 0.2s;
+}
+
+.spreadsheet-file-link:hover {
+    background: rgba(102, 126, 234, 0.1);
+    text-decoration: none;
+}
+
+/* Responsive spreadsheet */
+@media (max-width: 1200px) {
+    .spreadsheet-table {
+        font-size: 0.85em;
+    }
+    
+    .spreadsheet-table th,
+    .spreadsheet-table td {
+        padding: 8px 6px;
+    }
+    
+    .spreadsheet-table .col-keterangan {
+        min-width: 180px;
+    }
+}
+
+@media (max-width: 768px) {
+    .spreadsheet-table {
+        font-size: 0.8em;
+    }
+    
+    .spreadsheet-table th,
+    .spreadsheet-table td {
+        padding: 6px 4px;
+    }
+    
+    .spreadsheet-table .col-tanggal,
+    .spreadsheet-table .col-invoice,
+    .spreadsheet-table .col-company,
+    .spreadsheet-table .col-jenis {
+        width: auto;
+    }
+    
+    .spreadsheet-table .col-keterangan {
+        min-width: 150px;
+    }
 }
 
 /* ═══════════════════════════════════════════════════════
