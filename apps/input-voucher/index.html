@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>FinanceSync Pro v3.8.11 - Dynamic Multi-Company (Edit Mode Fixed)</title>
+  <title>FinanceSync Pro v3.8.12 - Dynamic Multi-Company (Console Error Fixed)</title>
   
 <!-- External Libraries -->
 <script src="https://cdn.tailwindcss.com"></script>
@@ -266,7 +266,7 @@
     .doc-wrap{background:#f1f5f9;padding:20px}
     
     /* ==========================================
-       🖨️ PDF GENERATION - STRICT 2 PAGES (v3.8.11 FIXED)
+       🖨️ PDF GENERATION - STRICT 2 PAGES (v3.8.12 FIXED)
        ========================================== */
     .document-page {
       background: #fff !important;
@@ -906,7 +906,7 @@
         
         <button class="loader-retry-btn" id="appRetryBtn" onclick="retryFirebaseInit()">🔄 Coba Hubungkan Ulang</button>
         
-        <div style="margin-top:24px;font-size:10px;color:#3e4f6f;letter-spacing:1px">v3.8.11 • Edit Mode Fixed</div>
+        <div style="margin-top:24px;font-size:10px;color:#3e4f6f;letter-spacing:1px">v3.8.12 • Console Error Fixed</div>
       </div>
     </div>
 
@@ -922,7 +922,7 @@
           <div class="flex items-center gap-3">
             <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-[--accent] to-[--sheets] flex items-center justify-center text-lg shadow-lg shadow-indigo-500/20">💰</div>
             <div>
-              <h1 class="text-base font-bold tracking-tight">FinanceSync Pro <span class="text-[10px] text-[--muted] font-normal ml-1 bg-[--bg2] px-1.5 py-0.5 rounded">v3.8.11</span></h1>
+              <h1 class="text-base font-bold tracking-tight">FinanceSync Pro <span class="text-[10px] text-[--muted] font-normal ml-1 bg-[--bg2] px-1.5 py-0.5 rounded">v3.8.12</span></h1>
               <p class="text-[10px] text-[--muted]">Dynamic Multi-Company Edition</p>
             </div>
           </div>
@@ -1349,7 +1349,7 @@
   </div>
 
   <!-- ==========================================
-       DOCUMENT PREVIEW MODAL
+       DOCUMENT PREVIEW MODAL - FIXED per PDF
        IDs: documentModal, docBody
        ========================================== -->
   <div id="documentModal" class="modal-bg hidden">
@@ -1774,6 +1774,177 @@
     }
     
     console.log('%c🖨️ PDF cleanup helper loaded', 'color: #22c55e; font-size: 11px;');
+  </script>
+
+  <!-- ==========================================
+       ✅ VOUCHER MODAL FUNCTIONS - FIXED v3.8.12
+       Null-safe checks + PDF format match
+       ========================================== -->
+  <script>
+    // ✅ FIXED: Format tanggal Indonesia (short month)
+    function formatTanggalID(tanggal) {
+      if (!tanggal || tanggal === '-') return '-';
+      try {
+        const date = new Date(tanggal);
+        return date.toLocaleDateString('id-ID', {
+          year: 'numeric',
+          month: 'short',
+          day: 'numeric'
+        });
+      } catch(e) {
+        return tanggal;
+      }
+    }
+    
+    // ✅ FIXED: openVoucherModal dengan null-safe checks
+    function openVoucherModal(data) {
+        console.log('🔓 Opening voucher modal with data:', data);
+        
+        // Helper function untuk set textContent dengan null check
+        const safeSetText = (id, value, fallback = '-') => {
+            const el = document.getElementById(id);
+            if (el) {
+                el.textContent = value || fallback;
+                return true;
+            } else {
+                console.warn(`⚠️ Element with id "${id}" not found`);
+                return false;
+            }
+        };
+        
+        // Helper untuk format tanggal
+        const fmtDate = (tgl) => formatTanggalID(tgl || '-');
+        
+        // ========== HALAMAN 1: FORMULIR PENGAJUAN HO ==========
+        
+        safeSetText('modalInvoiceNo', data.invoice || '-');
+        safeSetText('vLokasi', data.lokasi || '-');
+        safeSetText('vTanggal', fmtDate(data.tanggal));
+        safeSetText('vInvoice', data.invoice || '-');
+        safeSetText('vJenis', data.jenis || '-');
+        safeSetText('vDibayarkan', data.dibayarkan || data.dibayarkanKepada || '-');
+        safeSetText('vCreatedBy', data.createdBy || 'Nur Wahyudi');
+        safeSetText('vCreatedDate', fmtDate(data.tanggal));
+        safeSetText('vApprovedDate', fmtDate(data.tanggal));
+        
+        // ========== HALAMAN 2: BUKTI PENGELUARAN KAS/BANK ==========
+        
+        safeSetText('vVoucherNo', data.voucherNo || data.invoice || '-');
+        safeSetText('vBayarTanggal', fmtDate(data.tanggalBayar || data.tanggal));
+        safeSetText('vPayee', data.dibayarkan || data.dibayarkanKepada || '-');
+        safeSetText('vKeperluan', data.keterangan || data.isi_invoice || '-');
+        safeSetText('vPemohon', data.pemohon || data.dibayarkanKepada || '-');
+        safeSetText('vPemohonDate', fmtDate(data.tanggal));
+        safeSetText('vBayarDate', fmtDate(data.tanggalBayar || data.tanggal));
+        
+        // ✅ FIXED: Handle vPenerima dengan fallback yang lebih aman
+        const penerimaValue = data.penerima || data.dibayarkanKepada || data.dibayarkan || 'Sri Ekowati';
+        safeSetText('vPenerima', penerimaValue);
+        
+        // ========== SIGNATURE DATES (Halaman 2) ==========
+        // ✅ Tambahan: Set tanggal untuk 4 signature Halaman 2
+        safeSetText('vSig1Date', fmtDate(data.tanggal)); // Andi Dhiya Salsabila
+        safeSetText('vSig2Date', fmtDate(data.tanggal)); // Harijon
+        safeSetText('vSig3Date', fmtDate(data.tanggal)); // Andi Nursyam Halid
+        safeSetText('vSig4Date', fmtDate(data.tanggal)); // Sri Ekowati
+        
+        // ========== FORMAT NOMINAL ==========
+        const nominal = parseInt(data.nominal) || 0;
+        const formattedNominal = new Intl.NumberFormat('id-ID', { 
+            style: 'currency', 
+            currency: 'IDR',
+            minimumFractionDigits: 0
+        }).format(nominal);
+        
+        // ========== ITEMS TABLE (Page 1 & 2) ==========
+        // ✅ FIXED: Support multiple field names for description
+        const itemDescription = data.keterangan || data.isi_invoice || data.desc || data.nama || '-';
+        
+        const itemsHtml = `
+            <tr>
+                <td class="col-no">1</td>
+                <td class="col-desc">${itemDescription}</td>
+                <td class="col-qty">1</td>
+                <td class="col-price">${formattedNominal}</td>
+                <td class="col-total">${formattedNominal}</td>
+            </tr>
+        `;
+        
+        const itemsBody1 = document.getElementById('vItemsBody');
+        const itemsBody2 = document.getElementById('vItemsBody2');
+        if (itemsBody1) itemsBody1.innerHTML = itemsHtml;
+        if (itemsBody2) itemsBody2.innerHTML = itemsHtml;
+        
+        // ========== TOTALS ==========
+        safeSetText('vSubtotal', formattedNominal);
+        
+        const vTotal = document.getElementById('vTotal');
+        if (vTotal) vTotal.innerHTML = `<strong>${formattedNominal}</strong>`;
+        
+        const vTotalBayar = document.getElementById('vTotalBayar');
+        if (vTotalBayar) vTotalBayar.innerHTML = `<strong>${formattedNominal}</strong>`;
+        
+        // ========== TERBILANG ==========
+        const vTerbilang = document.getElementById('vTerbilang');
+        if (vTerbilang) vTerbilang.textContent = terbilang(nominal) + ' Rupiah';
+        
+        // ========== SHOW MODAL ==========
+        const modal = document.getElementById('voucherPrintModal');
+        if (modal) {
+            modal.classList.add('active');
+            document.body.style.overflow = 'hidden';
+            console.log('✅ Voucher modal opened successfully');
+        } else {
+            console.error('❌ Modal element #voucherPrintModal not found!');
+        }
+    }
+    
+    // ✅ FIXED: closeVoucherModal
+    function closeVoucherModal() {
+        const modal = document.getElementById('voucherPrintModal');
+        if (modal) {
+            modal.classList.remove('active');
+            document.body.style.overflow = '';
+            console.log('✅ Voucher modal closed');
+        }
+    }
+    
+    // ✅ FIXED: printVoucher
+    function printVoucher() {
+        console.log('🖨️ Printing voucher...');
+        window.print();
+    }
+    
+    // ✅ FIXED: terbilang function (IDR)
+    function terbilang(n) {
+        if (n === 0) return 'Nol';
+        const satuan = ["", "Satu", "Dua", "Tiga", "Empat", "Lima", "Enam", "Tujuh", "Delapan", "Sembilan", "Sepuluh", "Sebelas"];
+        if (n < 12) return satuan[n];
+        if (n < 20) return terbilang(n - 10) + " Belas";
+        if (n < 100) return terbilang(Math.floor(n / 10)) + " Puluh" + (n % 10 > 0 ? " " + terbilang(n % 10) : "");
+        if (n < 200) return "Seratus" + (n - 100 > 0 ? " " + terbilang(n - 100) : "");
+        if (n < 1000) return terbilang(Math.floor(n / 100)) + " Ratus" + (n % 100 > 0 ? " " + terbilang(n % 100) : "");
+        if (n < 2000) return "Seribu" + (n - 1000 > 0 ? " " + terbilang(n - 1000) : "");
+        if (n < 1000000) return terbilang(Math.floor(n / 1000)) + " Ribu" + (n % 1000 > 0 ? " " + terbilang(n % 1000) : "");
+        if (n < 1000000000) return terbilang(Math.floor(n / 1000000)) + " Juta" + (n % 1000000 > 0 ? " " + terbilang(n % 1000000) : "");
+        return n.toString();
+    }
+    
+    // ✅ Tutup modal voucher jika klik di luar area konten
+    document.getElementById('voucherPrintModal')?.addEventListener('click', function(e) {
+        if (e.target === this) {
+            closeVoucherModal();
+        }
+    });
+    
+    // ✅ Tutup modal voucher dengan tombol ESC
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+            closeVoucherModal();
+        }
+    });
+    
+    console.log('%c✅ Voucher Modal Functions loaded (v3.8.12)', 'color: #22c55e; font-size: 11px; font-weight: bold;');
   </script>
 
   <!-- ==========================================
