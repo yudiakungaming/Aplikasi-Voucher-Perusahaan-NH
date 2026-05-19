@@ -1,8 +1,9 @@
 // ═══════════════════════════════════════════════════════
-// FINANCE SYNC PRO - DASHBOARD SCRIPT (v4.5 - VOUCHER MODAL)
+// FINANCE SYNC PRO - DASHBOARD SCRIPT (v4.6 - PAGINATION FIX)
 // ✅ FIX: Added debug logging for dibayarkanKepada field
 // ✅ Semua fitur + Charts, Pagination, PWA, Advanced Filters
 // ✅ NEW: Click row to open voucher print modal (2 pages)
+// ✅ FIXED: Pagination buttons (top & bottom) now working!
 // ═══════════════════════════════════════════════════════
 
 // ===== KONFIGURASI =====
@@ -192,10 +193,13 @@ function setupPaginationListeners() {
     });
 }
 
+// ✅ FIXED: goToPage now refreshes table and pagination controls
 function goToPage(page) {
     if (page < 1 || page > totalPages) return;
     currentPage = page;
     applyPagination();
+    displayTable(paginatedVouchers);      // ✅ Refresh tabel
+    updatePaginationControls();           // ✅ Update status tombol
     document.getElementById('tableContainer')?.scrollIntoView({ behavior: 'smooth' });
 }
 
@@ -544,6 +548,7 @@ function applyPagination() {
     }
 }
 
+// ✅ FIXED: updateBtns('Bottom') untuk tombol pagination bawah
 function updatePaginationControls() {
     const showPagination = filteredVouchers.length > pageSize && pageSize !== Infinity;
     document.getElementById('paginationTop')?.style.setProperty('display', showPagination ? 'flex' : 'none');
@@ -565,8 +570,8 @@ function updatePaginationControls() {
         if (next) next.disabled = currentPage === totalPages;
         if (last) last.disabled = currentPage === totalPages;
     };
-    updateBtns('');
-    updateBtns('');
+    updateBtns('');           // ✅ Top buttons (no prefix)
+    updateBtns('Bottom');     // ✅ Bottom buttons (FIXED: was '', now 'Bottom')
 }
 
 function initDateRange() {
@@ -842,7 +847,7 @@ function exportToPDF() {
         columnStyles: { 5: { halign: 'right' }, 6: { cellWidth: 25 } }
     });
     
-    const pageCount = doc.internal.getNumberOfNumberOfPages();
+    const pageCount = doc.internal.getNumberOfPages();
     for (let i = 1; i <= pageCount; i++) {
         doc.setPage(i);
         doc.setFontSize(8);
