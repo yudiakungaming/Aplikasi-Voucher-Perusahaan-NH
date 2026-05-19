@@ -252,21 +252,17 @@
                     </div>
                 </div>
                 
-                <div class="voucher-signature">
+                <!-- ✅ UPDATED: Signature Section - Hanya 2 Penandatangan -->
+                <div class="voucher-signature voucher-signature-2cols">
                     <div class="voucher-signature-box">
-                        <span class="label">Dibuat Oleh,<br><small>(Staff Finance)</small></span>
+                        <span class="label">Dibuat Oleh,<br><small>(Finance)</small></span>
                         <span class="name" id="vCreatedBy">Nur Wahyudi</span>
                         <span class="date" id="vCreatedDate">-</span>
                     </div>
                     <div class="voucher-signature-box">
-                        <span class="label">Diperiksa Oleh,<br><small>(Finance Manager)</small></span>
+                        <span class="label">Disetujui Oleh,<br><small>(Direktur Keuangan)</small></span>
                         <span class="name">Harijon</span>
-                        <span class="date">-</span>
-                    </div>
-                    <div class="voucher-signature-box">
-                        <span class="label">Disetujui Oleh,<br><small>(Direktur)</small></span>
-                        <span class="name">Andi Dhiya</span>
-                        <span class="date">-</span>
+                        <span class="date" id="vApprovedDate">-</span>
                     </div>
                 </div>
                 
@@ -364,8 +360,8 @@
         </button>
     </div>
 
-    <!-- ✅ FIX: Cache buster version updated to v=4.7 -->
-    <script src="script.js?v=4.7"></script>
+    <!-- ✅ FIX: Cache buster version updated to v=4.8 -->
+    <script src="script.js?v=4.8"></script>
     
     <script>
         if ('serviceWorker' in navigator) {
@@ -378,26 +374,42 @@
             });
         }
         
+        // ✅ Helper: Format tanggal Indonesia
+        function formatTanggalID(tanggal) {
+            if (!tanggal || tanggal === '-') return '-';
+            try {
+                const date = new Date(tanggal);
+                return date.toLocaleDateString('id-ID', { 
+                    year: 'numeric', 
+                    month: 'long', 
+                    day: 'numeric' 
+                });
+            } catch(e) {
+                return tanggal;
+            }
+        }
+        
         // ✅ Fungsi untuk membuka modal detail voucher
         function openVoucherModal(data) {
             // Isi data ke form Page 1
             document.getElementById('modalInvoiceNo').textContent = data.invoice || '-';
             document.getElementById('vLokasi').textContent = data.lokasi || '-';
-            document.getElementById('vTanggal').textContent = data.tanggal || '-';
+            document.getElementById('vTanggal').textContent = formatTanggalID(data.tanggal || '-');
             document.getElementById('vInvoice').textContent = data.invoice || '-';
             document.getElementById('vJenis').textContent = data.jenis || '-';
             document.getElementById('vDibayarkan').textContent = data.dibayarkan || '-';
             document.getElementById('vCreatedBy').textContent = data.createdBy || 'Nur Wahyudi';
-            document.getElementById('vCreatedDate').textContent = data.tanggal || '-';
+            document.getElementById('vCreatedDate').textContent = formatTanggalID(data.tanggal || '-');
+            document.getElementById('vApprovedDate').textContent = formatTanggalID(data.tanggal || '-');
             
             // Isi data ke form Page 2
             document.getElementById('vVoucherNo').textContent = data.voucherNo || data.invoice || '-';
-            document.getElementById('vBayarTanggal').textContent = data.tanggalBayar || data.tanggal || '-';
+            document.getElementById('vBayarTanggal').textContent = formatTanggalID(data.tanggalBayar || data.tanggal || '-');
             document.getElementById('vPayee').textContent = data.dibayarkan || '-';
             document.getElementById('vKeperluan').textContent = data.keterangan || '-';
             document.getElementById('vPemohon').textContent = data.pemohon || '-';
-            document.getElementById('vPemohonDate').textContent = data.tanggal || '-';
-            document.getElementById('vBayarDate').textContent = data.tanggalBayar || '-';
+            document.getElementById('vPemohonDate').textContent = formatTanggalID(data.tanggal || '-');
+            document.getElementById('vBayarDate').textContent = formatTanggalID(data.tanggalBayar || '-');
             document.getElementById('vPenerima').textContent = data.penerima || data.dibayarkan || '-';
             
             // Format nominal
