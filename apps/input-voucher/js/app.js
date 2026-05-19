@@ -1,9 +1,9 @@
 /**
  * ============================================
- * FinanceSync Pro v3.8.9 - Main Application Logic (PDF LAYOUT FIXED v2)
+ * FinanceSync Pro v3.8.11 - Main Application Logic (FIX: Edit Mode Isi Invoice)
  * ============================================
  * 
- * 📅 Last Update: 12/05/2026
+ * 📅 Last Update: 19/05/2026
  * 🔧 ALL Fixes Applied:
  *   ✅ Infinite loop prevention (resetForm/cancelEdit)
  *   ✅ Auth state UI management  
@@ -20,6 +20,7 @@
  *   ✅ NEW v3.8.8: PDF LAYOUT FIX - Table-based HTML for reliable rendering
  *   ✅ NEW v3.8.9: PDF ULTRA-FIX - Exact A4 dimensions + compact styling
  *   ✅ NEW v3.8.10: Session timeout & no auto-login integration
+ *   ✅ ✅ ✅ FIX v3.8.11: Edit Mode - Field "isi invoice/keterangan" tidak hilang ✅ ✅ ✅
  */
 
 // ==========================================
@@ -113,8 +114,8 @@ async function handleFormSubmit(e) {
     }
 
     if (AppState.formItems.length === 0 || 
-        AppState.formItems.every(item => !item.nama || !item.nominal)) {
-      Toast.warning('Tambahkan minimal 1 item dengan nama dan nominal');
+        AppState.formItems.every(item => !item.nama && !item.keterangan && !item.ket)) {
+      Toast.warning('Tambahkan minimal 1 item dengan nama/keterangan dan nominal');
       return;
     }
 
@@ -180,7 +181,11 @@ function gatherFormData() {
   const tglBayar = document.getElementById('fTglBayar').value;
 
   let totalNominal = 0;
-  const validItems = AppState.formItems.filter(item => item.nama && item.nominal);
+  
+  // ✅ FIX v3.8.11: Support multiple field names for item description
+  const validItems = AppState.formItems.filter(item => 
+    (item.nama || item.keterangan || item.ket || item.isi_invoice) && item.nominal
+  );
   
   validItems.forEach(item => {
     totalNominal += parseFloat(item.nominal) || 0;
@@ -194,7 +199,12 @@ function gatherFormData() {
 
   return {
     tanggal, lokasi, jenis, kode, noInvoice, status,
-    items: validItems,
+    items: validItems.map(item => ({
+      // ✅ Normalize item fields to consistent format
+      nama: item.nama || item.keterangan || item.ket || item.isi_invoice || '',
+      nominal: item.nominal || 0,
+      qty: item.qty || 1
+    })),
     totalNominal,
     dibayarkanKepada, catatan,
     tglBayar: status === 'Lunas' ? tglBayar : null,
@@ -244,7 +254,7 @@ function addFormItem() {
   const itemHtml = `
     <div class="grid grid-cols-12 gap-2 items-start" id="${itemId}" style="background:rgba(10,15,26,.4);padding:10px;border-radius:8px;border:1px solid var(--border)">
       <div class="col-span-12 md:col-span-5">
-        <input type="text" class="input-field item-nama" placeholder="Nama barang/jasa" 
+        <input type="text" class="input-field item-nama" placeholder="Nama barang/jasa / Keterangan" 
                onchange="updateFormItem('${itemId}', 'nama', this.value)" style="font-size:13px;padding:8px 12px">
       </div>
       <div class="col-span-5 md:col-span-4">
@@ -469,7 +479,7 @@ window.switchTab = function(status, btnElement) {
 };
 
 // ==========================================
-// ✏️ Edit Mode Functions
+// ✏️ Edit Mode Functions - ✅ FIXED v3.8.11
 // ==========================================
 
 async function editSubmission(docId) {
@@ -498,11 +508,14 @@ async function editSubmission(docId) {
   }
 }
 
+// ✅ ✅ ✅ FIXED v3.8.11: populateFormWithSubmission - Handle multiple field names for description ✅ ✅ ✅
 function populateFormWithSubmission(submission) {
+  console.log('📥 Loading submission data for edit:', submission);
+  
   document.getElementById('fTgl').value = submission.tanggal || '';
   document.getElementById('fLokasi').value = submission.lokasi || '';
   
-  // ✅ Support both snake_case and camelCase
+  // ✅ Support multiple field name variations
   document.getElementById('fJenis').value = submission.jenis || submission.jenis_pengajuan || submission.jenisPengajuan || '';
   document.getElementById('fKode').value = submission.kode || '';
   document.getElementById('fNoInv').value = submission.noInvoice || submission.no_invoice || '';
@@ -518,41 +531,85 @@ function populateFormWithSubmission(submission) {
     if (input) input.value = tglBayar;
   }
 
+  // ✅ ✅ ✅ CLEAR & REPOPULATE FORM ITEMS ✅ ✅ ✅
   AppState.formItems = [];
   const itemsBox = document.getElementById('itemsBox');
   if (itemsBox) itemsBox.innerHTML = '';
 
+  // ✅ Handle items array with multiple possible field names for description
   if (submission.items && submission.items.length > 0) {
-    submission.items.forEach(item => {
+    submission.items.forEach((item, index) => {
+      console.log(`📦 Processing item ${index + 1}:`, item);
+      
       addFormItem();
       const lastIndex = AppState.formItems.length - 1;
       
-      // Support snake_case (ket) dan camelCase (nama)
-      const itemNama = item.nama || item.ket || '';
+      // ✅ ✅ ✅ SUPPORT MULTIPLE FIELD NAMES FOR DESCRIPTION/KETERANGAN ✅ ✅ ✅
+      // Priority: nama > keterangan > ket > isi_invoice > desc > description > keterangan_item
+      const itemDescription = item.nama || 
+                             item.keterangan || 
+                             item.ket || 
+                             item.isi_invoice || 
+                             item.desc || 
+                             item.description || 
+                             item.keterangan_item || 
+                             '';
+      
       const itemNominal = parseFloat(item.nominal) || 0;
       const itemQty = parseInt(item.qty) || 1;
       
-      AppState.formItems[lastIndex].nama = itemNama;
+      // Update AppState
+      AppState.formItems[lastIndex].nama = itemDescription;
       AppState.formItems[lastIndex].nominal = itemNominal;
       AppState.formItems[lastIndex].qty = itemQty;
 
+      // ✅ Find and populate the input fields
       const lastItemId = AppState.formItems[lastIndex].id;
-      const namaInput = document.querySelector(`#${lastItemId} .item-nama`);
+      
+      // Try multiple selectors for the description input
+      const namaInput = document.querySelector(`#${lastItemId} .item-nama`) || 
+                       document.querySelector(`#${lastItemId} [name="keterangan"]`) ||
+                       document.querySelector(`#${lastItemId} input[type="text"]`);
+                       
       const nominalInput = document.querySelector(`#${lastItemId} .item-nominal`);
       const qtyInput = document.querySelector(`#${lastItemId} .item-qty`);
 
-      if (namaInput) namaInput.value = itemNama;
+      if (namaInput) {
+        namaInput.value = itemDescription;
+        console.log(`✅ Set namaInput value: "${itemDescription}"`);
+      } else {
+        console.warn(`⚠️ Could not find nama input for item ${lastItemId}`);
+      }
+      
       if (nominalInput) nominalInput.value = itemNominal;
       if (qtyInput) qtyInput.value = itemQty;
     });
+    
   } else {
-    addFormItem();
+    // ✅ Also check for legacy field: submission.isi_invoice (single string for all items)
+    const legacyIsiInvoice = submission.isi_invoice || submission.keterangan || submission.desc;
+    if (legacyIsiInvoice && typeof legacyIsiInvoice === 'string' && legacyIsiInvoice.trim()) {
+      console.log('📝 Found legacy isi_invoice field:', legacyIsiInvoice);
+      addFormItem();
+      const lastIndex = AppState.formItems.length - 1;
+      const lastItemId = AppState.formItems[lastIndex].id;
+      
+      AppState.formItems[lastIndex].nama = legacyIsiInvoice;
+      
+      const namaInput = document.querySelector(`#${lastItemId} .item-nama`);
+      if (namaInput) namaInput.value = legacyIsiInvoice;
+    } else {
+      addFormItem();
+    }
   }
 
   calculateTotal();
 
+  // Handle files
   AppState.formState.files = submission.files || [];
   selectedFiles = [];
+  
+  console.log('✅ Form populated with submission data');
 }
 
 /**
@@ -689,7 +746,7 @@ async function generateDocumentPreview(data) {
             ${items.map((item, idx) => `
               <tr>
                 <td style="border: 0.5px solid #ccc; padding: 3px 5px; text-align: center;">${idx + 1}</td>
-                <td style="border: 0.5px solid #ccc; padding: 3px 5px;">${item.nama || item.ket || '-'}</td>
+                <td style="border: 0.5px solid #ccc; padding: 3px 5px;">${item.nama || item.keterangan || item.ket || item.isi_invoice || '-'}</td>
                 <td style="border: 0.5px solid #ccc; padding: 3px 5px; text-align: center;">${item.qty || 1}</td>
                 <td style="border: 0.5px solid #ccc; padding: 3px 5px; text-align: right;">${CurrencyUtils.formatRupiah(item.nominal)}</td>
                 <td style="border: 0.5px solid #ccc; padding: 3px 5px; text-align: right;">${CurrencyUtils.formatRupiah(item.nominal * item.qty)}</td>
@@ -759,7 +816,7 @@ async function generateDocumentPreview(data) {
           </thead>
           <tbody>
             <tr>
-              <td style="border: 0.5px solid #ccc; padding: 4px 5px;">${items.map(i => i.nama || i.ket).join(', ') || jenis}</td>
+              <td style="border: 0.5px solid #ccc; padding: 4px 5px;">${items.map(i => i.nama || i.keterangan || i.ket || i.isi_invoice).join(', ') || jenis}</td>
               <td style="border: 0.5px solid #ccc; padding: 4px 5px; text-align: right;">${CurrencyUtils.formatRupiah(totalNominal)}</td>
             </tr>
             <tr style="background-color: #f9f9f9; font-weight: bold;">
@@ -842,13 +899,13 @@ window.dlPDF = async function() {
       filename: `HO-${document.getElementById('fKode')?.value || 'VOUCHER'}-${Date.now()}.pdf`,
       image: { type: 'jpeg', quality: 0.98 },
       html2canvas: { 
-        scale: 2,  // Turunkan dari 3 ke 2 untuk mengurangi ukuran + menghindari overflow
+        scale: 2,
         useCORS: true,
         logging: false,
         scrollY: 0,
         scrollX: 0,
-        windowWidth: 794,   // 210mm × 3.78px/mm = exact A4 width
-        windowHeight: 1123, // 297mm × 3.78px/mm = exact A4 height
+        windowWidth: 794,
+        windowHeight: 1123,
         letterRendering: true,
         allowTaint: false,
         backgroundColor: '#ffffff',
@@ -892,7 +949,6 @@ window.dlPDF = async function() {
       }
       pageCount = 2;
     } else if (pageCount < 2) {
-      // Tambah halaman kosong jika hanya 1 halaman tergenerate
       pdf.addPage();
       pageCount = 2;
     }
@@ -1461,7 +1517,7 @@ window.doLogout = doLogout;
 window.updateAuthUI = window.updateAuthUI;
 window.initAuthListener = window.initAuthListener;
 
-console.log('%c🎮 Main App module loaded v3.8.10 (Session Management)', 'color: #8b5cf6; font-size: 11px; font-weight: bold;');
+console.log('%c🎮 Main App module loaded v3.8.11 (Edit Mode Fix)', 'color: #8b5cf6; font-size: 11px; font-weight: bold;');
 console.log('%c🔧 All Fixes Applied:', 'color: #22c55e; font-size: 10px;');
 console.log('  ✅ Missing catch/finally after try → FIXED');
 console.log('  ✅ Mismatched curly braces in doLogin → FIXED');
@@ -1477,3 +1533,4 @@ console.log('  ✅ NEW v3.8.7: PDF download EXACT 2 pages + 6 signatures from Fi
 console.log('  ✅ NEW v3.8.8: PDF LAYOUT FIX - Table-based HTML for reliable rendering');
 console.log('  ✅ NEW v3.8.9: PDF ULTRA-FIX - Exact A4 dimensions + compact styling + page enforcement');
 console.log('  ✅ NEW v3.8.10: Session timeout & no auto-login integration');
+console.log('  ✅ ✅ ✅ NEW v3.8.11: Edit Mode - Field isi_invoice/keterangan tidak hilang ✅ ✅ ✅');
