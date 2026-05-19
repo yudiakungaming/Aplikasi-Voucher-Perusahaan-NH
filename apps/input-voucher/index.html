@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>FinanceSync Pro v3.8.8 - Dynamic Multi-Company</title>
+  <title>FinanceSync Pro v3.8.11 - Dynamic Multi-Company (Edit Mode Fixed)</title>
   
 <!-- External Libraries -->
 <script src="https://cdn.tailwindcss.com"></script>
@@ -266,8 +266,8 @@
     .doc-wrap{background:#f1f5f9;padding:20px}
     
     /* ==========================================
-       🖨️ PDF GENERATION - STRICT 2 PAGES (v3.8.8 FIXED)
-       ========================================== -->
+       🖨️ PDF GENERATION - STRICT 2 PAGES (v3.8.11 FIXED)
+       ========================================== */
     .document-page {
       background: #fff !important;
       color: #1e293b !important;
@@ -727,12 +727,6 @@
       gap: 12px;
       margin-top: 24px;
     }
-    .mig-stats-grid {
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 12px;
-      margin-top: 24px;
-    }
     .mig-stat-card {
       background: #0f172a;
       padding: 16px;
@@ -912,7 +906,7 @@
         
         <button class="loader-retry-btn" id="appRetryBtn" onclick="retryFirebaseInit()">🔄 Coba Hubungkan Ulang</button>
         
-        <div style="margin-top:24px;font-size:10px;color:#3e4f6f;letter-spacing:1px">v3.8.8 • PDF Fixed Edition</div>
+        <div style="margin-top:24px;font-size:10px;color:#3e4f6f;letter-spacing:1px">v3.8.11 • Edit Mode Fixed</div>
       </div>
     </div>
 
@@ -928,7 +922,7 @@
           <div class="flex items-center gap-3">
             <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-[--accent] to-[--sheets] flex items-center justify-center text-lg shadow-lg shadow-indigo-500/20">💰</div>
             <div>
-              <h1 class="text-base font-bold tracking-tight">FinanceSync Pro <span class="text-[10px] text-[--muted] font-normal ml-1 bg-[--bg2] px-1.5 py-0.5 rounded">v3.8.8</span></h1>
+              <h1 class="text-base font-bold tracking-tight">FinanceSync Pro <span class="text-[10px] text-[--muted] font-normal ml-1 bg-[--bg2] px-1.5 py-0.5 rounded">v3.8.11</span></h1>
               <p class="text-[10px] text-[--muted]">Dynamic Multi-Company Edition</p>
             </div>
           </div>
@@ -1094,13 +1088,13 @@
                   </div>
                 </div>
 
-                <!-- Items Box (Dynamic) -->
+                <!-- ✅ FIXED: Items Box (Dynamic) - Added better selectors for edit mode -->
                 <div>
                   <div class="flex justify-between items-center mb-2">
                     <label class="field-label">Rincian Barang / Jasa<span class="required-star">*</span></label>
                     <span class="text-[10px] text-[--muted]">Minimal 1 item</span>
                   </div>
-                  <div id="itemsBox" class="space-y-2"></div>
+                  <div id="itemsBox" class="space-y-2" data-component="items-container"></div>
                   <button type="button" onclick="addFormItem()" class="btn-add mt-2">+ Tambah Item</button>
                 </div>
 
@@ -1780,6 +1774,51 @@
     }
     
     console.log('%c🖨️ PDF cleanup helper loaded', 'color: #22c55e; font-size: 11px;');
+  </script>
+
+  <!-- ==========================================
+       ✅ EDIT MODE DEBUG HELPER (NEW v3.8.11)
+       Bantu debugging field yang tidak terisi saat edit
+       ========================================== -->
+  <script>
+    // Helper untuk debugging edit mode
+    window.debugEditForm = function() {
+      console.group('🔍 Debug Edit Form');
+      
+      // Check items box
+      const itemsBox = document.getElementById('itemsBox');
+      console.log('📦 itemsBox:', itemsBox);
+      console.log('📦 itemsBox children:', itemsBox?.children.length || 0);
+      
+      // Check each item input
+      document.querySelectorAll('#itemsBox .item-nama').forEach((input, idx) => {
+        console.log(`📝 Item ${idx + 1} nama input:`, {
+          value: input.value,
+          placeholder: input.placeholder,
+          classList: Array.from(input.classList),
+          parent: input.parentElement?.id
+        });
+      });
+      
+      // Check AppState
+      console.log('🗃️ AppState.formItems:', AppState?.formItems);
+      console.log('🗃️ AppState.formState:', AppState?.formState);
+      
+      console.groupEnd();
+    };
+    
+    // Auto-run debug when edit mode is active
+    const originalEditSubmission = window.editSubmission;
+    if (originalEditSubmission) {
+      window.editSubmission = async function(docId) {
+        await originalEditSubmission(docId);
+        // Run debug after 500ms to allow DOM to update
+        setTimeout(window.debugEditForm, 500);
+      };
+    }
+    
+    console.log('%c🔧 Edit Mode Debug Helper loaded', 'color: #f59e0b; font-size: 11px;');
+    console.log('%c💡 Tip: Run debugEditForm() in console to inspect form state', 'color: #94a3b8; font-size: 10px;');
   </script>
 
 </body>
