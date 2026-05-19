@@ -1,7 +1,8 @@
 /* ═══════════════════════════════════════════════════════
-   FINANCE SYNC PRO - DASHBOARD STYLES (v4.5)
+   FINANCE SYNC PRO - DASHBOARD STYLES (v4.6)
    ✅ Charts, Pagination, PWA, Advanced Filters
    ✅ Voucher Print Modal (2 Pages)
+   ✅ Fixed: 2-column signature for Page 1 (HO Form)
    ═══════════════════════════════════════════════════════ */
 
 /* ===== CSS VARIABLES (untuk Dark Mode) ===== */
@@ -886,6 +887,18 @@ body {
     padding-bottom: 2px;
 }
 
+/* ✅ UPDATED: Signature Styles - Support 2-cols & 3/5-cols */
+
+/* Signature 2 kolom - Khusus Halaman 1 (Formulir Pengajuan HO) */
+.voucher-signature-2cols {
+    margin-top: 50px;
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 40px;
+    page-break-inside: avoid;
+}
+
+/* Signature 3/5 kolom - Untuk Halaman 2 (Bukti Pengeluaran) */
 .voucher-signature {
     margin-top: 40px;
     display: grid;
@@ -902,21 +915,33 @@ body {
 .voucher-signature-box .label {
     font-size: 9px;
     color: #666;
-    margin-bottom: 30px;
+    margin-bottom: 50px; /* Space lebih besar untuk tanda tangan tangan */
     display: block;
+    min-height: 40px;
+    line-height: 1.4;
+}
+
+.voucher-signature-box .label small {
+    display: block;
+    margin-top: 3px;
+    font-size: 8px;
+    color: #888;
+    font-weight: normal;
 }
 
 .voucher-signature-box .name {
     font-weight: bold;
-    font-size: 10px;
+    font-size: 11px;
     border-top: 1px solid #333;
-    padding-top: 3px;
+    padding-top: 5px;
+    display: block;
 }
 
 .voucher-signature-box .date {
     font-size: 9px;
     color: #666;
     margin-top: 3px;
+    display: block;
 }
 
 .voucher-footer-note {
@@ -1053,8 +1078,14 @@ body {
         padding: 10mm;
     }
     
-    .voucher-signature {
+    .voucher-signature,
+    .voucher-signature-2cols {
         grid-template-columns: 1fr;
+        gap: 25px;
+    }
+    
+    .voucher-signature-box .label {
+        margin-bottom: 40px;
     }
 }
 
@@ -1127,7 +1158,8 @@ body {
     
     /* Prevent table & signature from breaking */
     .voucher-items-table,
-    .voucher-signature {
+    .voucher-signature,
+    .voucher-signature-2cols {
         page-break-inside: avoid;
     }
     
