@@ -26,6 +26,26 @@
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
+    
+    <!-- ✅ CSS untuk memastikan PDF hanya 2 halaman -->
+    <style>
+        @media print {
+            /* Batasi hanya 2 halaman untuk voucher */
+            .voucher-page {
+                page-break-after: always;
+                page-break-inside: avoid;
+                height: 297mm; /* A4 height */
+                box-sizing: border-box;
+            }
+            .voucher-page:last-child {
+                page-break-after: auto;
+            }
+            /* Sembunyikan elemen lain saat print */
+            .container, .header, .stats, .controls-bar, .footer, #spreadsheetModal {
+                display: none !important;
+            }
+        }
+    </style>
 </head>
 <body>
     <div class="container">
@@ -256,7 +276,7 @@
                     </div>
                 </div>
                 
-                <!-- ✅ UPDATED: Signature Section - Hanya 2 Penandatangan -->
+                <!-- ✅ UPDATED: Signature Section - Hanya 2 Penandatangan (Halaman 1) -->
                 <div class="voucher-signature voucher-signature-2cols">
                     <div class="voucher-signature-box">
                         <span class="label">Dibuat Oleh,<br><small>(Finance)</small></span>
@@ -324,31 +344,27 @@
                     </div>
                 </div>
                 
-                <div class="voucher-signature">
+                <!-- ✅ UPDATED: Signature Section - 4 Penandatangan (Halaman 2) -->
+                <div class="voucher-signature voucher-signature-4cols">
                     <div class="voucher-signature-box">
-                        <span class="label">Pemohon,<br><small>(User)</small></span>
-                        <span class="name" id="vPemohon">-</span>
-                        <span class="date" id="vPemohonDate">-</span>
+                        <span class="label">Mengetahui,<br><small>(Direktur)</small></span>
+                        <span class="name">Andi Dhiya Salsabila</span>
+                        <span class="date" id="vSig1Date">-</span>
                     </div>
                     <div class="voucher-signature-box">
-                        <span class="label">Mengetahui,<br><small>(Finance)</small></span>
+                        <span class="label">Finance,<br><small>(Manager)</small></span>
                         <span class="name">Harijon</span>
-                        <span class="date">-</span>
+                        <span class="date" id="vSig2Date">-</span>
                     </div>
                     <div class="voucher-signature-box">
-                        <span class="label">Menyetujui,<br><small>(Direktur)</small></span>
-                        <span class="name">Andi Dhiya</span>
-                        <span class="date">-</span>
+                        <span class="label">Operasional,<br><small>(Supervisor)</small></span>
+                        <span class="name">Andi Nursyam Halid</span>
+                        <span class="date" id="vSig3Date">-</span>
                     </div>
                     <div class="voucher-signature-box">
-                        <span class="label">Dibayarkan Oleh,<br><small>(Kasir)</small></span>
-                        <span class="name">-</span>
-                        <span class="date" id="vBayarDate">-</span>
-                    </div>
-                    <div class="voucher-signature-box">
-                        <span class="label">Penerima,<br><small>(Vendor/Staff)</small></span>
-                        <span class="name" id="vPenerima">-</span>
-                        <span class="date">-</span>
+                        <span class="label">Penerima,<br><small>(Staff/Vendor)</small></span>
+                        <span class="name" id="vPenerima">Sri Ekowati</span>
+                        <span class="date" id="vSig4Date">-</span>
                     </div>
                 </div>
                 
@@ -392,8 +408,8 @@
         </div>
     </div>
 
-    <!-- ✅ FIX: Cache buster version updated to v=4.9 -->
-    <script src="script.js?v=4.9"></script>
+    <!-- ✅ FIX: Cache buster version updated to v=4.10 -->
+    <script src="script.js?v=4.10"></script>
     
     <script>
         if ('serviceWorker' in navigator) {
@@ -442,7 +458,13 @@
             document.getElementById('vPemohon').textContent = data.pemohon || '-';
             document.getElementById('vPemohonDate').textContent = formatTanggalID(data.tanggal || '-');
             document.getElementById('vBayarDate').textContent = formatTanggalID(data.tanggalBayar || '-');
-            document.getElementById('vPenerima').textContent = data.penerima || data.dibayarkan || '-';
+            document.getElementById('vPenerima').textContent = data.penerima || data.dibayarkan || 'Sri Ekowati';
+            
+            // Isi tanggal signature Page 2
+            document.getElementById('vSig1Date').textContent = formatTanggalID(data.tanggal || '-');
+            document.getElementById('vSig2Date').textContent = formatTanggalID(data.tanggal || '-');
+            document.getElementById('vSig3Date').textContent = formatTanggalID(data.tanggal || '-');
+            document.getElementById('vSig4Date').textContent = formatTanggalID(data.tanggal || '-');
             
             // Format nominal
             const nominal = parseInt(data.nominal) || 0;
