@@ -1,9 +1,10 @@
 /* ═══════════════════════════════════════════════════════
-   FINANCE SYNC PRO - DASHBOARD STYLES (v4.7)
+   FINANCE SYNC PRO - DASHBOARD STYLES (v4.8)
    ✅ Charts, Pagination, PWA, Advanced Filters
-   ✅ Voucher Print Modal (2 Pages)
-   ✅ Fixed: 2-column signature for Page 1 (HO Form)
+   ✅ Voucher Print Modal (2 Pages) - PDF Format Match
+   ✅ Signature: Page 1 (3 cols), Page 2 (5 cols)
    ✅ NEW: Spreadsheet View Styles
+   ✅ FIXED: Print/PDF exactly 2 pages A4
    ═══════════════════════════════════════════════════════ */
 
 /* ===== CSS VARIABLES (untuk Dark Mode) ===== */
@@ -789,6 +790,9 @@ body {
     padding: 15mm;
     box-sizing: border-box;
     background: white;
+    /* ✅ Ensure each page fits A4 height */
+    max-height: 297mm;
+    overflow: hidden;
 }
 
 .voucher-header {
@@ -888,66 +892,68 @@ body {
     padding-bottom: 2px;
 }
 
-/* ✅ UPDATED: Signature Styles - Support 2-cols & 3/5-cols */
+/* ═══════════════════════════════════════════════════════
+   ✍️ SIGNATURE STYLES (PDF Format Match)
+   ═══════════════════════════════════════════════════════ */
 
-/* Signature 2 kolom - Khusus Halaman 1 (Formulir Pengajuan HO) */
-.voucher-signature-2cols {
-    margin-top: 50px;
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 40px;
-    page-break-inside: avoid;
-}
-
-/* Signature 3/5 kolom - Untuk Halaman 2 (Bukti Pengeluaran) */
-.voucher-signature {
+/* Signature 3 kolom - Halaman 1 (Formulir Pengajuan HO) */
+.voucher-signature-3cols {
     margin-top: 40px;
     display: grid;
     grid-template-columns: repeat(3, 1fr);
-    gap: 10px;
+    gap: 15px;
+    page-break-inside: avoid;
+}
+
+/* Signature 5 kolom - Halaman 2 (Bukti Pengeluaran Kas/Bank) */
+.voucher-signature-5cols {
+    margin-top: 25px;
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 5px;
     page-break-inside: avoid;
 }
 
 .voucher-signature-box {
     text-align: center;
-    padding: 8px;
+    padding: 5px;
 }
 
 .voucher-signature-box .label {
-    font-size: 9px;
+    font-size: 8px;
     color: #666;
-    margin-bottom: 50px; /* Space lebih besar untuk tanda tangan tangan */
+    margin-bottom: 35px;
     display: block;
-    min-height: 40px;
-    line-height: 1.4;
+    min-height: 30px;
+    line-height: 1.3;
 }
 
 .voucher-signature-box .label small {
     display: block;
-    margin-top: 3px;
-    font-size: 8px;
+    margin-top: 2px;
+    font-size: 7px;
     color: #888;
     font-weight: normal;
 }
 
 .voucher-signature-box .name {
     font-weight: bold;
-    font-size: 11px;
+    font-size: 10px;
     border-top: 1px solid #333;
-    padding-top: 5px;
+    padding-top: 4px;
     display: block;
 }
 
 .voucher-signature-box .date {
-    font-size: 9px;
+    font-size: 8px;
     color: #666;
-    margin-top: 3px;
+    margin-top: 2px;
     display: block;
 }
 
 .voucher-footer-note {
-    margin-top: 20px;
-    font-size: 9px;
+    margin-top: 15px;
+    font-size: 8px;
     color: #666;
     font-style: italic;
     text-align: center;
@@ -957,7 +963,7 @@ body {
 .voucher-page-separator {
     height: 2px;
     background: repeating-linear-gradient(90deg, #333, #333 5px, transparent 5px, transparent 10px);
-    margin: 30px 0;
+    margin: 25px 0;
     opacity: 0.5;
 }
 
@@ -1012,7 +1018,7 @@ body {
 }
 
 /* ═══════════════════════════════════════════════════════
-   📊 SPREADSHEET VIEW STYLES (NEW)
+   📊 SPREADSHEET VIEW STYLES
    ═══════════════════════════════════════════════════════ */
 
 .spreadsheet-table {
@@ -1265,14 +1271,15 @@ body {
         padding: 10mm;
     }
     
-    .voucher-signature,
-    .voucher-signature-2cols {
+    /* Responsive signature: stack vertically on mobile */
+    .voucher-signature-3cols,
+    .voucher-signature-5cols {
         grid-template-columns: 1fr;
-        gap: 25px;
+        gap: 20px;
     }
     
     .voucher-signature-box .label {
-        margin-bottom: 40px;
+        margin-bottom: 30px;
     }
 }
 
@@ -1288,16 +1295,16 @@ body {
 }
 
 /* ═══════════════════════════════════════════════════════
-   🖨️ PRINT STYLES (GLOBAL & VOUCHER)
+   🖨️ PRINT STYLES - EXACTLY 2 PAGES A4
    ═══════════════════════════════════════════════════════ */
 
 @media print {
-    /* Hide dashboard elements */
+    /* Hide ALL dashboard elements */
     body * {
         visibility: hidden !important;
     }
     
-    /* Show only voucher modal */
+    /* Show ONLY voucher modal content */
     #voucherPrintModal,
     #voucherPrintModal * {
         visibility: visible !important;
@@ -1313,6 +1320,7 @@ body {
         padding: 0;
         margin: 0;
         overflow: visible;
+        display: block !important;
     }
     
     .voucher-modal-content {
@@ -1323,42 +1331,66 @@ body {
         min-height: auto;
     }
     
-    /* Each voucher page becomes separate page */
+    /* ✅ FORCE EXACTLY 2 PAGES */
     .voucher-page {
         page-break-after: always;
         page-break-inside: avoid;
         padding: 10mm;
         margin: 0;
+        height: 297mm; /* A4 height */
+        box-sizing: border-box;
+        overflow: hidden;
     }
     
-    /* Last page no break */
+    /* Last page: no page break after */
     .voucher-page:last-child {
         page-break-after: auto;
     }
     
-    /* Hide modal header & print button */
+    /* Hide modal UI elements during print */
     .voucher-modal-header,
     .voucher-close,
     .voucher-print-btn {
         display: none !important;
     }
     
-    /* Prevent table & signature from breaking */
+    /* Prevent content breaking inside tables & signatures */
     .voucher-items-table,
-    .voucher-signature,
-    .voucher-signature-2cols {
+    .voucher-signature-3cols,
+    .voucher-signature-5cols,
+    .voucher-total-section,
+    .voucher-footer-note {
         page-break-inside: avoid;
     }
     
-    /* Page setup */
+    /* Print-optimized signature spacing */
+    .voucher-signature-3cols,
+    .voucher-signature-5cols {
+        margin-top: 30px;
+    }
+    
+    .voucher-signature-box .label {
+        margin-bottom: 30px;
+        font-size: 8px;
+    }
+    
+    .voucher-signature-box .name {
+        font-size: 10px;
+    }
+    
+    .voucher-signature-box .date {
+        font-size: 8px;
+    }
+    
+    /* Page setup for A4 */
     @page {
         size: A4;
         margin: 0;
     }
     
-    /* Hide other dashboard elements */
-    .header, .stats, .controls-bar, .footer, .icon-btn, .charts-container, .content { 
-        display: none !important; 
+    /* Hide spreadsheet modal during voucher print */
+    #spreadsheetModal {
+        display: none !important;
     }
 }
 
