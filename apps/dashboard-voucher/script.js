@@ -1,7 +1,8 @@
 // ═══════════════════════════════════════════════════════
-// FINANCE SYNC PRO - DASHBOARD SCRIPT (v4.4 - DEBUG ENABLED)
+// FINANCE SYNC PRO - DASHBOARD SCRIPT (v4.5 - VOUCHER MODAL)
 // ✅ FIX: Added debug logging for dibayarkanKepada field
 // ✅ Semua fitur + Charts, Pagination, PWA, Advanced Filters
+// ✅ NEW: Click row to open voucher print modal (2 pages)
 // ═══════════════════════════════════════════════════════
 
 // ===== KONFIGURASI =====
@@ -692,7 +693,7 @@ function renderTrendChart(vouchers) {
 }
 
 // ═══════════════════════════════════════════════════════
-// 📋 TABLE (FIXED KEY)
+// 📋 TABLE (FIXED KEY + CLICK TO OPEN MODAL)
 // ═══════════════════════════════════════════════════════
 function displayTable(vouchers) {
     const container = document.getElementById('tableContainer');
@@ -714,8 +715,8 @@ function displayTable(vouchers) {
     ];
     
     const headerHTML = columns.map(col => `<th ${col.sortable ? `data-sort="${col.key}"` : ''}>${col.label}</th>`).join('');
-    const rowsHTML = vouchers.map(row => `
-        <tr>
+    const rowsHTML = vouchers.map((row, index) => `
+        <tr data-voucher-index="${index}" data-voucher-id="${row.id || ''}">
             ${columns.map(col => {
                 let value = row[col.key] ?? '-';
                 if (col.format === 'currency' && value !== '-' && value !== '') value = formatRupiah(value);
@@ -744,6 +745,49 @@ function displayTable(vouchers) {
         </p>
     `;
     container.style.display = 'block';
+    
+    // ✅ TAMBAHKAN EVENT CLICK PADA SETIAP BARIS TABEL
+    addVoucherRowClickHandler(vouchers);
+}
+
+// ✅ FUNGSI BARU: Handle klik pada baris tabel untuk buka modal voucher
+function addVoucherRowClickHandler(vouchers) {
+    const tableBody = document.querySelector('#tableContainer .data-table tbody');
+    if (!tableBody) return;
+    
+    tableBody.querySelectorAll('tr[data-voucher-index]').forEach(row => {
+        row.style.cursor = 'pointer';
+        row.addEventListener('click', function(e) {
+            // Jangan buka modal jika klik pada link file
+            if (e.target.closest('.file-link')) return;
+            
+            const index = parseInt(this.dataset.voucherIndex);
+            const voucher = vouchers[index];
+            
+            if (voucher && typeof openVoucherModal === 'function') {
+                // Format data untuk modal (pastikan semua field yang dibutuhkan ada)
+                const modalData = {
+                    id: voucher.id || '',
+                    invoice: voucher.no_invoice || '-',
+                    voucherNo: voucher.no_invoice || '-',
+                    tanggal: voucher.tanggal || '-',
+                    tanggalBayar: voucher.tanggal || '-',
+                    lokasi: voucher.lokasi || '-',
+                    jenis: voucher.jenis || '-',
+                    dibayarkan: voucher.dibayarkanKepada || '-',
+                    payee: voucher.dibayarkanKepada || '-',
+                    keterangan: voucher.isi_invoice || '-',
+                    nominal: voucher.nominal || '0',
+                    company: voucher.company || '-',
+                    createdBy: 'Nur Wahyudi', // Default, bisa diganti dari data user
+                    pemohon: voucher.dibayarkanKepada || '-',
+                    penerima: voucher.dibayarkanKepada || '-'
+                };
+                
+                openVoucherModal(modalData);
+            }
+        });
+    });
 }
 
 function exportToCSV() {
@@ -798,7 +842,7 @@ function exportToPDF() {
         columnStyles: { 5: { halign: 'right' }, 6: { cellWidth: 25 } }
     });
     
-    const pageCount = doc.internal.getNumberOfPages();
+    const pageCount = doc.internal.getNumberOfNumberOfPages();
     for (let i = 1; i <= pageCount; i++) {
         doc.setPage(i);
         doc.setFontSize(8);
@@ -890,6 +934,7 @@ function clearFilters() {
     applyFilters();
 }
 
+// ✅ EXPORT FUNGSI GLOBAL UNTUK DIGUNAKAN DI INDEX.HTML
 window.clearFilters = clearFilters;
 window.refreshData = () => fetchData(true);
 window.forceReload = () => { localStorage.removeItem('theme'); window.location.reload(true); };
