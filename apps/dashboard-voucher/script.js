@@ -1,9 +1,10 @@
 // ═══════════════════════════════════════════════════════
-// FINANCE SYNC PRO - DASHBOARD SCRIPT (v4.6 - PAGINATION FIX)
+// FINANCE SYNC PRO - DASHBOARD SCRIPT (v4.7 - SPREADSHEET VIEW)
 // ✅ FIX: Added debug logging for dibayarkanKepada field
 // ✅ Semua fitur + Charts, Pagination, PWA, Advanced Filters
 // ✅ NEW: Click row to open voucher print modal (2 pages)
 // ✅ FIXED: Pagination buttons (top & bottom) now working!
+// ✅ NEW: Spreadsheet View - Display data like Google Sheets
 // ═══════════════════════════════════════════════════════
 
 // ===== KONFIGURASI =====
@@ -90,6 +91,12 @@ function initEventListeners() {
     
     const exportPdfBtn = document.getElementById('exportPdfBtn');
     if (exportPdfBtn) exportPdfBtn.addEventListener('click', exportToPDF);
+    
+    // ✅ NEW: Event listener untuk tombol Spreadsheet View
+    const viewSpreadsheetBtn = document.getElementById('viewSpreadsheetBtn');
+    if (viewSpreadsheetBtn) {
+        viewSpreadsheetBtn.addEventListener('click', openSpreadsheetModal);
+    }
     
     const autoRefresh = document.getElementById('autoRefresh');
     if (autoRefresh) {
@@ -938,6 +945,218 @@ function clearFilters() {
     currentPage = 1;
     applyFilters();
 }
+
+// ═══════════════════════════════════════════════════════
+// 📊 SPREADSHEET VIEW FUNCTIONS (NEW)
+// ═══════════════════════════════════════════════════════
+
+// Helper: Format tanggal Indonesia (short month)
+function formatTanggalID(tanggal) {
+    if (!tanggal || tanggal === '-') return '-';
+    try {
+        const date = new Date(tanggal);
+        return date.toLocaleDateString('id-ID', {
+            year: 'numeric',
+            month: 'short',
+            day: 'numeric'
+        });
+    } catch(e) {
+        return tanggal;
+    }
+}
+
+function openSpreadsheetModal() {
+    const modal = document.getElementById('spreadsheetModal');
+    const loading = document.getElementById('spreadsheetLoading');
+    const content = document.getElementById('spreadsheetContent');
+    
+    if (modal) {
+        modal.style.display = 'block';
+        document.body.style.overflow = 'hidden';
+        
+        // Show loading
+        if (loading) loading.style.display = 'block';
+        if (content) {
+            content.style.display = 'none';
+            content.innerHTML = '';
+        }
+        
+        // Fetch and render data
+        renderSpreadsheetTable();
+    }
+}
+
+function closeSpreadsheetModal() {
+    const modal = document.getElementById('spreadsheetModal');
+    if (modal) {
+        modal.style.display = 'none';
+        document.body.style.overflow = '';
+    }
+}
+
+function refreshSpreadsheetData() {
+    renderSpreadsheetTable();
+}
+
+async function renderSpreadsheetTable() {
+    const loading = document.getElementById('spreadsheetLoading');
+    const content = document.getElementById('spreadsheetContent');
+    const info = document.getElementById('spreadsheetInfo');
+    
+    try {
+        // Fetch data dari Apps Script
+        const response = await fetch(APPS_SCRIPT_URL());
+        const result = await response.json();
+        
+        if (!result?.success) throw new Error(result?.message || 'Failed to fetch data');
+        
+        const data = normalizeData(result);
+        
+        // Render tabel
+        const tableHTML = createSpreadsheetTable(data);
+        
+        if (loading) loading.style.display = 'none';
+        if (content) {
+            content.innerHTML = tableHTML;
+            content.style.display = 'block';
+        }
+        if (info) {
+            info.textContent = `${data.length} data • Updated: ${new Date().toLocaleString('id-ID')}`;
+        }
+        
+    } catch (error) {
+        console.error('❌ Spreadsheet error:', error);
+        if (loading) {
+            loading.style.display = 'block';
+            loading.innerHTML = `❌ Gagal memuat data: ${error.message}`;
+            loading.style.color = '#ef4444';
+        }
+    }
+}
+
+function createSpreadsheetTable(data) {
+    if (data.length === 0) {
+        return '<div style="text-align: center; padding: 50px; color: #666;">📭 Tidak ada data untuk ditampilkan</div>';
+    }
+    
+    // Define columns sesuai dengan struktur spreadsheet
+    const columns = [
+        { key: 'no', label: 'NO', class: 'col-no', render: (row, index) => index + 1 },
+        { key: 'tanggal', label: 'TANGGAL', class: 'col-tanggal', render: (row) => formatTanggalID(row.tanggal) },
+        { key: 'no_invoice', label: 'NO INVOICE', class: 'col-invoice' },
+        { key: 'company', label: 'COMPANY', class: 'col-company', render: (row) => (row.company || '-').toUpperCase() },
+        { key: 'jenis', label: 'JENIS', class: 'col-jenis' },
+        { key: 'lokasi', label: 'LOKASI', class: 'col-lokasi' },
+        { key: 'isi_invoice', label: 'KETERANGAN', class: 'col-keterangan' },
+        { key: 'nominal', label: 'NOMINAL', class: 'col-nominal', render: (row) => formatRupiah(row.nominal) },
+        { key: 'status', label: 'STATUS', class: 'col-status', render: (row) => renderSpreadsheetStatus(row.status) },
+        { key: 'dibayarkanKepada', label: 'DIBAYARKAN', class: 'col-dibayarkan' },
+        { key: 'file_url', label: 'FILE', class: 'col-file', render: (row) => renderSpreadsheetFileLink(row) }
+    ];
+    
+    // Build table header
+    const headerHTML = columns.map(col => 
+        `<th class="${col.class || ''}">${col.label}</th>`
+    ).join('');
+    
+    // Build table body
+    const rowsHTML = data.map((row, index) => {
+        const cellsHTML = columns.map(col => {
+            const value = col.render ? col.render(row, index) : (row[col.key] ?? '-');
+            return `<td class="${col.class || ''}">${value}</td>`;
+        }).join('');
+        
+        return `<tr>${cellsHTML}</tr>`;
+    }).join('');
+    
+    return `
+        <table class="spreadsheet-table">
+            <thead>
+                <tr>${headerHTML}</tr>
+            </thead>
+            <tbody>
+                ${rowsHTML}
+            </tbody>
+        </table>
+    `;
+}
+
+function renderSpreadsheetStatus(status) {
+    const statusClass = status === 'Lunas' ? 'lunas' : 'belum';
+    const statusText = status || 'Belum Lunas';
+    return `<span class="spreadsheet-status ${statusClass}">${statusText}</span>`;
+}
+
+function renderSpreadsheetFileLink(row) {
+    if (!row.file_url || !row.file_url.startsWith('http')) {
+        return '<span style="color: #999;">-</span>';
+    }
+    
+    const fileName = row.file_name || 'Lihat File';
+    return `
+        <a href="${escapeHtml(row.file_url)}" target="_blank" rel="noopener" class="spreadsheet-file-link">
+            📎 ${escapeHtml(fileName)}
+        </a>
+    `;
+}
+
+function exportSpreadsheetToCSV() {
+    const content = document.getElementById('spreadsheetContent');
+    if (!content || content.style.display === 'none') {
+        alert('Silakan load data terlebih dahulu');
+        return;
+    }
+    
+    // Re-fetch data for export
+    fetch(APPS_SCRIPT_URL())
+        .then(res => res.json())
+        .then(result => {
+            if (!result?.success) throw new Error('Failed to fetch data');
+            
+            const data = normalizeData(result);
+            const columns = ['tanggal', 'no_invoice', 'company', 'jenis', 'lokasi', 'isi_invoice', 'nominal', 'status', 'dibayarkanKepada', 'file_url'];
+            const headers = ['Tanggal', 'No Invoice', 'Company', 'Jenis', 'Lokasi', 'Keterangan', 'Nominal', 'Status', 'Dibayarkan', 'Link File'];
+            
+            let csv = headers.join(',') + '\n';
+            data.forEach(row => {
+                const values = columns.map(col => {
+                    let val = row[col] ?? '';
+                    if (col === 'nominal') val = parseFloat(val) || 0;
+                    if (String(val).includes(',') || String(val).includes('"')) {
+                        val = `"${String(val).replace(/"/g, '""')}"`;
+                    }
+                    return val;
+                });
+                csv += values.join(',') + '\n';
+            });
+            
+            const blob = new Blob(['\ufeff' + csv], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `spreadsheet-export-${new Date().toISOString().slice(0,10)}.csv`;
+            link.click();
+            URL.revokeObjectURL(url);
+        })
+        .catch(err => {
+            console.error('Export error:', err);
+            alert('Gagal export CSV: ' + err.message);
+        });
+}
+
+// Close spreadsheet modal when clicking outside
+document.getElementById('spreadsheetModal')?.addEventListener('click', function(e) {
+    if (e.target === this) {
+        closeSpreadsheetModal();
+    }
+});
+
+// Close modal with ESC key
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+        closeSpreadsheetModal();
+    }
+});
 
 // ✅ EXPORT FUNGSI GLOBAL UNTUK DIGUNAKAN DI INDEX.HTML
 window.clearFilters = clearFilters;
