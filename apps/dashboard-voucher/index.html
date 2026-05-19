@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard Voucher - FinanceSync Pro</title>
     
-    <!-- 📱 PWA Meta Tags (Opsional - jika ingin dashboard juga installable) -->
+    <!-- 📱 PWA Meta Tags -->
     <meta name="application-name" content="FinanceSync Dashboard">
     <meta name="apple-mobile-web-app-title" content="FinanceSync">
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -26,46 +26,6 @@
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
-
-    <!-- ✅ CSS untuk Tombol Back to Portal -->
-    <style>
-        /* Back to Portal Button - Dashboard Specific */
-        .back-to-portal {
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            padding: 6px 12px;
-            background: rgba(99, 102, 241, 0.1);
-            border: 1px solid rgba(99, 102, 241, 0.2);
-            border-radius: 8px;
-            color: #6366f1;
-            text-decoration: none;
-            font-size: 12px;
-            font-weight: 500;
-            transition: all 0.2s ease;
-        }
-        .back-to-portal:hover {
-            background: rgba(99, 102, 241, 0.2);
-            border-color: rgba(99, 102, 241, 0.4);
-            transform: translateX(-2px);
-            color: #4f46e5;
-        }
-        .back-to-portal:active {
-            transform: translateX(0);
-        }
-        
-        /* Responsive: Stack header actions on mobile */
-        @media (max-width: 768px) {
-            .header-actions {
-                flex-wrap: wrap;
-                gap: 8px;
-            }
-            .back-to-portal {
-                width: 100%;
-                justify-content: center;
-            }
-        }
-    </style>
 </head>
 <body>
     <div class="container">
@@ -237,8 +197,175 @@
         </div>
     </div>
 
-    <!-- ✅ FIX: Cache buster version updated to v=4.6 -->
-    <script src="script.js?v=4.6"></script>
+    <!-- ✅ MODAL DETAIL VOUCHER (2 HALAMAN) - SIAP PRINT -->
+    <div id="voucherPrintModal">
+        <div class="voucher-modal-content">
+            <div class="voucher-modal-header">
+                <h3>📄 Preview Voucher - <span id="modalInvoiceNo">INV-XXXX</span></h3>
+                <button class="voucher-close" onclick="closeVoucherModal()">&times;</button>
+            </div>
+            
+            <!-- HALAMAN 1: FORMULIR PENGAJUAN HO -->
+            <div class="voucher-page" id="voucherPage1">
+                <div class="voucher-header">
+                    <!-- Ganti dengan logo perusahaan Anda -->
+                    <img src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 60'><text y='40' font-size='24' font-weight='bold'>FINANCESYNC</text></svg>" alt="Logo">
+                    <h2>FORMULIR PENGAJUAN HO</h2>
+                    <p>FinanceSync Pro • Operational Voucher</p>
+                </div>
+                
+                <table class="voucher-info-table">
+                    <tr><td>Lokasi</td><td>: <span id="vLokasi">-</span></td></tr>
+                    <tr><td>Tanggal</td><td>: <span id="vTanggal">-</span></td></tr>
+                    <tr><td>No. Invoice</td><td>: <span id="vInvoice">-</span></td></tr>
+                    <tr><td>Jenis Pengajuan</td><td>: <span id="vJenis">-</span></td></tr>
+                    <tr><td>Dibayarkan Kepada</td><td>: <span id="vDibayarkan">-</span></td></tr>
+                </table>
+                
+                <table class="voucher-items-table">
+                    <thead>
+                        <tr>
+                            <th class="col-no">NO</th>
+                            <th class="col-desc">KETERANGAN</th>
+                            <th class="col-qty">JUMLAH</th>
+                            <th class="col-price">HARGA</th>
+                            <th class="col-total">TOTAL</th>
+                        </tr>
+                    </thead>
+                    <tbody id="vItemsBody">
+                        <!-- Data item akan diinject via JavaScript -->
+                    </tbody>
+                </table>
+                
+                <div class="voucher-total-section">
+                    <div class="voucher-total-row">
+                        <span class="voucher-total-label">Subtotal:</span>
+                        <span class="voucher-total-value" id="vSubtotal">Rp 0</span>
+                    </div>
+                    <div class="voucher-total-row">
+                        <span class="voucher-total-label">PPN (0%):</span>
+                        <span class="voucher-total-value">Rp 0</span>
+                    </div>
+                    <div class="voucher-total-row">
+                        <span class="voucher-total-label"><strong>TOTAL:</strong></span>
+                        <span class="voucher-total-value" id="vTotal"><strong>Rp 0</strong></span>
+                    </div>
+                </div>
+                
+                <div class="voucher-signature">
+                    <div class="voucher-signature-box">
+                        <span class="label">Dibuat Oleh,<br><small>(Staff Finance)</small></span>
+                        <span class="name" id="vCreatedBy">Nur Wahyudi</span>
+                        <span class="date" id="vCreatedDate">-</span>
+                    </div>
+                    <div class="voucher-signature-box">
+                        <span class="label">Diperiksa Oleh,<br><small>(Finance Manager)</small></span>
+                        <span class="name">Harijon</span>
+                        <span class="date">-</span>
+                    </div>
+                    <div class="voucher-signature-box">
+                        <span class="label">Disetujui Oleh,<br><small>(Direktur)</small></span>
+                        <span class="name">Andi Dhiya</span>
+                        <span class="date">-</span>
+                    </div>
+                </div>
+                
+                <div class="voucher-footer-note">
+                    * Dokumen ini sah sebagai bukti pengajuan dana operasional
+                </div>
+            </div>
+            
+            <div class="voucher-page-separator"></div>
+            
+            <!-- HALAMAN 2: BUKTI PENGELUARAN KAS/BANK -->
+            <div class="voucher-page" id="voucherPage2">
+                <div class="voucher-header">
+                    <img src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 60'><text y='40' font-size='24' font-weight='bold'>FINANCESYNC</text></svg>" alt="Logo">
+                    <h2>BUKTI PENGELUARAN KAS / BANK</h2>
+                    <p>FinanceSync Pro • Payment Voucher</p>
+                </div>
+                
+                <table class="voucher-info-table">
+                    <tr><td>No. Voucher</td><td>: <span id="vVoucherNo">-</span></td></tr>
+                    <tr><td>Tanggal Bayar</td><td>: <span id="vBayarTanggal">-</span></td></tr>
+                    <tr><td>Dibayarkan Kepada</td><td>: <span id="vPayee">-</span></td></tr>
+                    <tr><td>Untuk Keperluan</td><td>: <span id="vKeperluan">-</span></td></tr>
+                    <tr><td>Cara Pembayaran</td><td>: 
+                        <span id="vCaraBayar">
+                            <label><input type="checkbox" checked disabled> Tunai</label>
+                            <label style="margin-left:10px"><input type="checkbox" disabled> Transfer</label>
+                        </span>
+                    </td></tr>
+                </table>
+                
+                <table class="voucher-items-table">
+                    <thead>
+                        <tr>
+                            <th class="col-no">NO</th>
+                            <th class="col-desc">URAIAN</th>
+                            <th class="col-qty">QTY</th>
+                            <th class="col-price">HARGA</th>
+                            <th class="col-total">JUMLAH</th>
+                        </tr>
+                    </thead>
+                    <tbody id="vItemsBody2">
+                        <!-- Data item akan diinject via JavaScript -->
+                    </tbody>
+                </table>
+                
+                <div class="voucher-total-section">
+                    <div class="voucher-total-row">
+                        <span class="voucher-total-label">Total Pembayaran:</span>
+                        <span class="voucher-total-value" id="vTotalBayar"><strong>Rp 0</strong></span>
+                    </div>
+                    <div class="voucher-total-row">
+                        <span class="voucher-total-label">Terbilang:</span>
+                        <span class="voucher-total-value" style="width:200px;font-weight:normal;font-size:9px" id="vTerbilang">-</span>
+                    </div>
+                </div>
+                
+                <div class="voucher-signature">
+                    <div class="voucher-signature-box">
+                        <span class="label">Pemohon,<br><small>(User)</small></span>
+                        <span class="name" id="vPemohon">-</span>
+                        <span class="date" id="vPemohonDate">-</span>
+                    </div>
+                    <div class="voucher-signature-box">
+                        <span class="label">Mengetahui,<br><small>(Finance)</small></span>
+                        <span class="name">Harijon</span>
+                        <span class="date">-</span>
+                    </div>
+                    <div class="voucher-signature-box">
+                        <span class="label">Menyetujui,<br><small>(Direktur)</small></span>
+                        <span class="name">Andi Dhiya</span>
+                        <span class="date">-</span>
+                    </div>
+                    <div class="voucher-signature-box">
+                        <span class="label">Dibayarkan Oleh,<br><small>(Kasir)</small></span>
+                        <span class="name">-</span>
+                        <span class="date" id="vBayarDate">-</span>
+                    </div>
+                    <div class="voucher-signature-box">
+                        <span class="label">Penerima,<br><small>(Vendor/Staff)</small></span>
+                        <span class="name" id="vPenerima">-</span>
+                        <span class="date">-</span>
+                    </div>
+                </div>
+                
+                <div class="voucher-footer-note">
+                    * Bukti ini sah sebagai tanda terima pembayaran dan dokumen akuntansi
+                </div>
+            </div>
+        </div>
+        
+        <!-- Tombol Print - Hanya muncul di layar, tidak saat print -->
+        <button class="voucher-print-btn" onclick="printVoucher()">
+            🖨️ Print Voucher
+        </button>
+    </div>
+
+    <!-- ✅ FIX: Cache buster version updated to v=4.7 -->
+    <script src="script.js?v=4.7"></script>
     
     <script>
         if ('serviceWorker' in navigator) {
@@ -250,6 +377,102 @@
                 });
             });
         }
+        
+        // ✅ Fungsi untuk membuka modal detail voucher
+        function openVoucherModal(data) {
+            // Isi data ke form Page 1
+            document.getElementById('modalInvoiceNo').textContent = data.invoice || '-';
+            document.getElementById('vLokasi').textContent = data.lokasi || '-';
+            document.getElementById('vTanggal').textContent = data.tanggal || '-';
+            document.getElementById('vInvoice').textContent = data.invoice || '-';
+            document.getElementById('vJenis').textContent = data.jenis || '-';
+            document.getElementById('vDibayarkan').textContent = data.dibayarkan || '-';
+            document.getElementById('vCreatedBy').textContent = data.createdBy || 'Nur Wahyudi';
+            document.getElementById('vCreatedDate').textContent = data.tanggal || '-';
+            
+            // Isi data ke form Page 2
+            document.getElementById('vVoucherNo').textContent = data.voucherNo || data.invoice || '-';
+            document.getElementById('vBayarTanggal').textContent = data.tanggalBayar || data.tanggal || '-';
+            document.getElementById('vPayee').textContent = data.dibayarkan || '-';
+            document.getElementById('vKeperluan').textContent = data.keterangan || '-';
+            document.getElementById('vPemohon').textContent = data.pemohon || '-';
+            document.getElementById('vPemohonDate').textContent = data.tanggal || '-';
+            document.getElementById('vBayarDate').textContent = data.tanggalBayar || '-';
+            document.getElementById('vPenerima').textContent = data.penerima || data.dibayarkan || '-';
+            
+            // Format nominal
+            const nominal = parseInt(data.nominal) || 0;
+            const formattedNominal = new Intl.NumberFormat('id-ID', { 
+                style: 'currency', 
+                currency: 'IDR',
+                minimumFractionDigits: 0
+            }).format(nominal);
+            
+            // Isi tabel items (Page 1 & 2)
+            const itemsHtml = `
+                <tr>
+                    <td class="col-no">1</td>
+                    <td class="col-desc">${data.keterangan || '-'}</td>
+                    <td class="col-qty">1</td>
+                    <td class="col-price">${formattedNominal}</td>
+                    <td class="col-total">${formattedNominal}</td>
+                </tr>
+            `;
+            document.getElementById('vItemsBody').innerHTML = itemsHtml;
+            document.getElementById('vItemsBody2').innerHTML = itemsHtml;
+            
+            // Isi total
+            document.getElementById('vSubtotal').textContent = formattedNominal;
+            document.getElementById('vTotal').innerHTML = `<strong>${formattedNominal}</strong>`;
+            document.getElementById('vTotalBayar').innerHTML = `<strong>${formattedNominal}</strong>`;
+            
+            // Terbilang (sederhana)
+            document.getElementById('vTerbilang').textContent = terbilang(nominal) + ' Rupiah';
+            
+            // Tampilkan modal
+            document.getElementById('voucherPrintModal').classList.add('active');
+            document.body.style.overflow = 'hidden'; // Prevent scroll behind modal
+        }
+        
+        // ✅ Fungsi untuk menutup modal
+        function closeVoucherModal() {
+            document.getElementById('voucherPrintModal').classList.remove('active');
+            document.body.style.overflow = '';
+        }
+        
+        // ✅ Fungsi untuk print voucher
+        function printVoucher() {
+            window.print();
+        }
+        
+        // ✅ Fungsi terbilang sederhana (IDR)
+        function terbilang(n) {
+            if (n === 0) return 'Nol';
+            const satuan = ["", "Satu", "Dua", "Tiga", "Empat", "Lima", "Enam", "Tujuh", "Delapan", "Sembilan", "Sepuluh", "Sebelas"];
+            if (n < 12) return satuan[n];
+            if (n < 20) return terbilang(n - 10) + " Belas";
+            if (n < 100) return terbilang(Math.floor(n / 10)) + " Puluh" + (n % 10 > 0 ? " " + terbilang(n % 10) : "");
+            if (n < 200) return "Seratus" + (n - 100 > 0 ? " " + terbilang(n - 100) : "");
+            if (n < 1000) return terbilang(Math.floor(n / 100)) + " Ratus" + (n % 100 > 0 ? " " + terbilang(n % 100) : "");
+            if (n < 2000) return "Seribu" + (n - 1000 > 0 ? " " + terbilang(n - 1000) : "");
+            if (n < 1000000) return terbilang(Math.floor(n / 1000)) + " Ribu" + (n % 1000 > 0 ? " " + terbilang(n % 1000) : "");
+            if (n < 1000000000) return terbilang(Math.floor(n / 1000000)) + " Juta" + (n % 1000000 > 0 ? " " + terbilang(n % 1000000) : "");
+            return n.toString();
+        }
+        
+        // ✅ Tutup modal jika klik di luar area konten
+        document.getElementById('voucherPrintModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeVoucherModal();
+            }
+        });
+        
+        // ✅ Tutup modal dengan tombol ESC
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                closeVoucherModal();
+            }
+        });
     </script>
 </body>
 </html>
