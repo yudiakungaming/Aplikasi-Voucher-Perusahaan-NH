@@ -1,9 +1,10 @@
 // ═══════════════════════════════════════════════════════
-// FINANCE SYNC PRO - DASHBOARD SCRIPT (v4.7 - SPREADSHEET VIEW)
-// ✅ FIX: Added debug logging for dibayarkanKepada field
+// FINANCE SYNC PRO - DASHBOARD SCRIPT (v4.8 - FIXED)
+// ✅ FIX: Pagination bottom buttons now working correctly!
+// ✅ FIX: Service Worker uses absolute path '/sw.js'
+// ✅ IMPROVED: Error handling & CDN fallback checks
 // ✅ Semua fitur + Charts, Pagination, PWA, Advanced Filters
 // ✅ NEW: Click row to open voucher print modal (2 pages)
-// ✅ FIXED: Pagination buttons (top & bottom) now working!
 // ✅ NEW: Spreadsheet View - Display data like Google Sheets
 // ═══════════════════════════════════════════════════════
 
@@ -388,7 +389,9 @@ async function initPWA() {
     updateOnlineStatus();
     if ('serviceWorker' in navigator) {
         try {
-            await navigator.serviceWorker.register('sw.js');
+            // ✅ FIX: Gunakan absolute path agar SW ter-register dari root
+            await navigator.serviceWorker.register('/sw.js');
+            console.log('✅ Service Worker registered from root');
         } catch (err) {
             console.log('❌ Service Worker failed:', err);
         }
@@ -555,7 +558,7 @@ function applyPagination() {
     }
 }
 
-// ✅ FIXED: updateBtns('Bottom') untuk tombol pagination bawah
+// ✅✅✅ FIXED: Pagination Controls - Ubah prefix jadi suffix!
 function updatePaginationControls() {
     const showPagination = filteredVouchers.length > pageSize && pageSize !== Infinity;
     document.getElementById('paginationTop')?.style.setProperty('display', showPagination ? 'flex' : 'none');
@@ -567,18 +570,21 @@ function updatePaginationControls() {
     if (infoEl) infoEl.textContent = info;
     if (infoElBottom) infoElBottom.textContent = info;
     
-    const updateBtns = (prefix) => {
-        const first = document.getElementById(`${prefix}firstPage`);
-        const prev = document.getElementById(`${prefix}prevPage`);
-        const next = document.getElementById(`${prefix}nextPage`);
-        const last = document.getElementById(`${prefix}lastPage`);
+    // ✅ FIX: Gunakan SUFFIX, bukan prefix!
+    // HTML: firstPage, firstPageBottom (bukan BottomfirstPage)
+    const updateBtns = (suffix) => {
+        const first = document.getElementById(`firstPage${suffix}`);
+        const prev = document.getElementById(`prevPage${suffix}`);
+        const next = document.getElementById(`nextPage${suffix}`);
+        const last = document.getElementById(`lastPage${suffix}`);
         if (first) first.disabled = currentPage === 1;
         if (prev) prev.disabled = currentPage === 1;
         if (next) next.disabled = currentPage === totalPages;
         if (last) last.disabled = currentPage === totalPages;
     };
-    updateBtns('');           // ✅ Top buttons (no prefix)
-    updateBtns('Bottom');     // ✅ Bottom buttons (FIXED: was '', now 'Bottom')
+    
+    updateBtns('');           // ✅ Top buttons: firstPage, prevPage, nextPage, lastPage
+    updateBtns('Bottom');     // ✅ Bottom buttons: firstPageBottom, prevPageBottom, ...
 }
 
 function initDateRange() {
@@ -612,6 +618,13 @@ function renderCharts(vouchers) {
     if (!chartsContainer) return;
     chartsContainer.style.display = vouchers.length > 0 ? 'grid' : 'none';
     if (vouchers.length === 0) { destroyCharts(); return; }
+    
+    // ✅ CDN Fallback Check
+    if (typeof Chart === 'undefined') {
+        console.warn('⚠️ Chart.js not loaded. Charts disabled.');
+        return;
+    }
+    
     destroyCharts();
     renderStatusChart(vouchers);
     renderCompanyChart(vouchers);
@@ -620,7 +633,10 @@ function renderCharts(vouchers) {
 
 function destroyCharts() {
     ['status', 'company', 'trend'].forEach(key => {
-        if (charts[key]) { charts[key].destroy(); charts[key] = null; }
+        if (charts[key]) { 
+            try { charts[key].destroy(); } catch(e) {}
+            charts[key] = null; 
+        }
     });
 }
 
@@ -777,26 +793,31 @@ function addVoucherRowClickHandler(vouchers) {
             const voucher = vouchers[index];
             
             if (voucher && typeof openVoucherModal === 'function') {
-                // Format data untuk modal (pastikan semua field yang dibutuhkan ada)
-                const modalData = {
-                    id: voucher.id || '',
-                    invoice: voucher.no_invoice || '-',
-                    voucherNo: voucher.no_invoice || '-',
-                    tanggal: voucher.tanggal || '-',
-                    tanggalBayar: voucher.tanggal || '-',
-                    lokasi: voucher.lokasi || '-',
-                    jenis: voucher.jenis || '-',
-                    dibayarkan: voucher.dibayarkanKepada || '-',
-                    payee: voucher.dibayarkanKepada || '-',
-                    keterangan: voucher.isi_invoice || '-',
-                    nominal: voucher.nominal || '0',
-                    company: voucher.company || '-',
-                    createdBy: 'Nur Wahyudi', // Default, bisa diganti dari data user
-                    pemohon: voucher.dibayarkanKepada || '-',
-                    penerima: voucher.dibayarkanKepada || '-'
-                };
-                
-                openVoucherModal(modalData);
+                try {
+                    // Format data untuk modal (pastikan semua field yang dibutuhkan ada)
+                    const modalData = {
+                        id: voucher.id || '',
+                        invoice: voucher.no_invoice || '-',
+                        voucherNo: voucher.no_invoice || '-',
+                        tanggal: voucher.tanggal || '-',
+                        tanggalBayar: voucher.tanggal || '-',
+                        lokasi: voucher.lokasi || '-',
+                        jenis: voucher.jenis || '-',
+                        dibayarkan: voucher.dibayarkanKepada || '-',
+                        payee: voucher.dibayarkanKepada || '-',
+                        keterangan: voucher.isi_invoice || '-',
+                        nominal: voucher.nominal || '0',
+                        company: voucher.company || '-',
+                        createdBy: 'Nur Wahyudi',
+                        pemohon: voucher.dibayarkanKepada || '-',
+                        penerima: voucher.dibayarkanKepada || '-'
+                    };
+                    
+                    openVoucherModal(modalData);
+                } catch (err) {
+                    console.error('❌ Error opening voucher modal:', err);
+                    alert('Gagal membuka detail voucher. Silakan refresh halaman.');
+                }
             }
         });
     });
@@ -827,42 +848,52 @@ function exportToCSV() {
 
 function exportToPDF() {
     if (filteredVouchers.length === 0) { alert('Tidak ada data untuk di-export'); return; }
-    if (typeof window.jspdf === 'undefined') { alert('Library PDF belum loaded'); return; }
     
-    const { jsPDF } = window.jspdf;
-    const doc = new jsPDF('landscape', 'mm', 'a4');
-    
-    doc.setFontSize(16);
-    doc.setTextColor(31, 78, 120);
-    doc.text('FinanceSync Pro - Laporan Voucher', 14, 20);
-    doc.setFontSize(10);
-    doc.setTextColor(102, 102, 102);
-    doc.text(`Tanggal: ${new Date().toLocaleDateString('id-ID')} • Total: ${filteredVouchers.length} voucher`, 14, 28);
-    
-    const tableData = filteredVouchers.map(v => [
-        v.tanggal, v.no_invoice, (v.company || '').toUpperCase(), v.jenis, v.lokasi, 
-        formatRupiah(v.nominal), v.status, v.dibayarkanKepada || '-'
-    ]);
-    
-    doc.autoTable({
-        head: [['Tanggal', 'Invoice', 'Company', 'Jenis', 'Lokasi', 'Nominal', 'Status', 'Dibayarkan']],
-        body: tableData,
-        startY: 35,
-        theme: 'grid',
-        styles: { fontSize: 8, cellPadding: 3 },
-        headStyles: { fillColor: [31, 78, 120], textColor: 255, fontStyle: 'bold' },
-        columnStyles: { 5: { halign: 'right' }, 6: { cellWidth: 25 } }
-    });
-    
-    const pageCount = doc.internal.getNumberOfPages();
-    for (let i = 1; i <= pageCount; i++) {
-        doc.setPage(i);
-        doc.setFontSize(8);
-        doc.setTextColor(150);
-        doc.text(`Halaman ${i} dari ${pageCount}`, doc.internal.pageSize.width - 30, doc.internal.pageSize.height - 10);
+    // ✅ CDN Fallback Check untuk jsPDF
+    if (typeof window.jspdf === 'undefined') { 
+        alert('Library PDF belum loaded. Silakan tunggu atau refresh halaman.'); 
+        return; 
     }
     
-    doc.save(`voucher-laporan-${new Date().toISOString().slice(0,10)}.pdf`);
+    try {
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF('landscape', 'mm', 'a4');
+        
+        doc.setFontSize(16);
+        doc.setTextColor(31, 78, 120);
+        doc.text('FinanceSync Pro - Laporan Voucher', 14, 20);
+        doc.setFontSize(10);
+        doc.setTextColor(102, 102, 102);
+        doc.text(`Tanggal: ${new Date().toLocaleDateString('id-ID')} • Total: ${filteredVouchers.length} voucher`, 14, 28);
+        
+        const tableData = filteredVouchers.map(v => [
+            v.tanggal, v.no_invoice, (v.company || '').toUpperCase(), v.jenis, v.lokasi, 
+            formatRupiah(v.nominal), v.status, v.dibayarkanKepada || '-'
+        ]);
+        
+        doc.autoTable({
+            head: [['Tanggal', 'Invoice', 'Company', 'Jenis', 'Lokasi', 'Nominal', 'Status', 'Dibayarkan']],
+            body: tableData,
+            startY: 35,
+            theme: 'grid',
+            styles: { fontSize: 8, cellPadding: 3 },
+            headStyles: { fillColor: [31, 78, 120], textColor: 255, fontStyle: 'bold' },
+            columnStyles: { 5: { halign: 'right' }, 6: { cellWidth: 25 } }
+        });
+        
+        const pageCount = doc.internal.getNumberOfPages();
+        for (let i = 1; i <= pageCount; i++) {
+            doc.setPage(i);
+            doc.setFontSize(8);
+            doc.setTextColor(150);
+            doc.text(`Halaman ${i} dari ${pageCount}`, doc.internal.pageSize.width - 30, doc.internal.pageSize.height - 10);
+        }
+        
+        doc.save(`voucher-laporan-${new Date().toISOString().slice(0,10)}.pdf`);
+    } catch (err) {
+        console.error('❌ PDF export error:', err);
+        alert('Gagal export PDF: ' + err.message);
+    }
 }
 
 function toggleAutoRefresh(enabled) {
@@ -887,7 +918,7 @@ function normalizeData(response) {
         dibayarkanKepada: item.dibayarkanKepada || '-',
         company: item.company ? String(item.company).trim().toLowerCase() : '',
         nominal: String(item.nominal || '').replace(/[^0-9.-]/g, '') || '0',
-        status: item.status ? String(item.status).trim() : 'Belum'
+        status: ['Lunas', 'Belum Lunas'].includes(item.status) ? item.status : 'Belum Lunas'
     }));
 }
 
