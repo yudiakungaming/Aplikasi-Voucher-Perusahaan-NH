@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>🎨 FinanceSync Icon Generator</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+      color: #e2e8f0;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem;
+      text-align: center;
+    }
+    h1 { font-size: 1.8rem; margin-bottom: 0.5rem; }
+    p { color: #94a3b8; margin-bottom: 1.5rem; max-width: 500px; line-height: 1.6; }
+    .btn {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      border: none;
+      padding: 14px 28px;
+      font-size: 16px;
+      font-weight: 600;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: transform 0.2s, box-shadow 0.2s;
+      box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+    }
+    .btn:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6); }
+    .btn:active { transform: translateY(0); }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 1.5rem;
+      margin-top: 2rem;
+      width: 100%;
+      max-width: 900px;
+    }
+    .card {
+      background: rgba(255,255,255,0.05);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 16px;
+      padding: 1.5rem;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 1rem;
+    }
+    .card h3 { font-size: 1rem; color: #cbd5e1; }
+    .card img {
+      width: 128px;
+      height: 128px;
+      border-radius: 12px;
+      background: #fff;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    }
+    .download-btn {
+      background: #10b981;
+      color: white;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 8px;
+      font-size: 14px;
+      cursor: pointer;
+      text-decoration: none;
+      display: inline-block;
+    }
+    .download-btn:hover { background: #059669; }
+    .note {
+      margin-top: 2rem;
+      font-size: 0.85rem;
+      color: #64748b;
+      background: rgba(0,0,0,0.3);
+      padding: 1rem;
+      border-radius: 10px;
+      max-width: 600px;
+      text-align: left;
+    }
+    .hidden { display: none; }
+  </style>
+</head>
+<body>
+  <h1>🎨 FinanceSync Icon Generator</h1>
+  <p>Generator ini akan membuat 4 icon PWA yang dibutuhkan (192x192, 512x512, + versi maskable). Klik tombol di bawah, lalu download file yang muncul.</p>
+  
+  <button class="btn" onclick="generateIcons()">⚡ Generate & Download Icons</button>
+
+  <div class="grid hidden" id="resultGrid">
+    <!-- Hasil generate akan muncul di sini -->
+  </div>
+
+  <div class="note hidden" id="instructions">
+    <strong> Langkah Selanjutnya:</strong><br>
+    1. Buat folder <code>/icons/</code> di root proyek Anda<br>
+    2. Pindahkan 4 file PNG yang sudah didownload ke folder tersebut<br>
+    3. Pastikan nama file persis seperti ini:<br>
+    <code>icon-192x192.png</code>, <code>icon-512x512.png</code>, <code>icon-192x192-maskable.png</code>, <code>icon-512x512-maskable.png</code><br>
+    4. Refresh halaman & test install PWA di Chrome!
+  </div>
+
+  <script>
+    function drawIcon(canvas, size, isMaskable) {
+      const ctx = canvas.getContext('2d');
+      const safePadding = isMaskable ? size * 0.2 : 0;
+      const drawSize = size - (safePadding * 2);
+      const centerX = size / 2;
+      const centerY = size / 2;
+
+      // Background gradient
+      const grad = ctx.createLinearGradient(0, 0, size, size);
+      grad.addColorStop(0, '#667eea');
+      grad.addColorStop(1, '#764ba2');
+      ctx.fillStyle = grad;
+      ctx.beginPath();
+      ctx.roundRect(safePadding, safePadding, drawSize, drawSize, isMaskable ? drawSize * 0.3 : size * 0.25);
+      ctx.fill();
+
+      // Inner glow
+      ctx.fillStyle = 'rgba(255,255,255,0.15)';
+      ctx.beginPath();
+      ctx.roundRect(safePadding + 10, safePadding + 10, drawSize - 20, drawSize - 20, isMaskable ? drawSize * 0.25 : size * 0.2);
+      ctx.fill();
+
+      // Text: FS
+      ctx.fillStyle = '#ffffff';
+      ctx.font = `bold ${size * 0.35}px 'Segoe UI', sans-serif`;
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.shadowColor = 'rgba(0,0,0,0.3)';
+      ctx.shadowBlur = 10;
+      ctx.fillText('FS', centerX, centerY);
+      ctx.shadowBlur = 0;
+
+      // Subtitle
+      ctx.font = `500 ${size * 0.09}px 'Segoe UI', sans-serif`;
+      ctx.fillStyle = 'rgba(255,255,255,0.8)';
+      ctx.fillText('FINANCESYNC', centerX, centerY + size * 0.22);
+    }
+
+    function generateIcons() {
+      const grid = document.getElementById('resultGrid');
+      const instructions = document.getElementById('instructions');
+      grid.innerHTML = '';
+      grid.classList.remove('hidden');
+      instructions.classList.remove('hidden');
+
+      const configs = [
+        { name: 'icon-192x192.png', size: 192, mask: false },
+        { name: 'icon-512x512.png', size: 512, mask: false },
+        { name: 'icon-192x192-maskable.png', size: 192, mask: true },
+        { name: 'icon-512x512-maskable.png', size: 512, mask: true }
+      ];
+
+      configs.forEach(cfg => {
+        const canvas = document.createElement('canvas');
+        canvas.width = cfg.size;
+        canvas.height = cfg.size;
+        drawIcon(canvas, cfg.size, cfg.mask);
+
+        const card = document.createElement('div');
+        card.className = 'card';
+        
+        const img = document.createElement('img');
+        img.src = canvas.toDataURL('image/png');
+        
+        const title = document.createElement('h3');
+        title.textContent = cfg.name;
+        
+        const link = document.createElement('a');
+        link.className = 'download-btn';
+        link.href = canvas.toDataURL('image/png');
+        link.download = cfg.name;
+        link.textContent = '⬇️ Download';
+        
+        card.appendChild(img);
+        card.appendChild(title);
+        card.appendChild(link);
+        grid.appendChild(card);
+      });
+
+      console.log('✅ Icons generated successfully!');
+    }
+  </script>
+</body>
+</html>
