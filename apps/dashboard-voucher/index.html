@@ -9,19 +9,20 @@
     <meta name="application-name" content="Dashboard Voucher Perusahaan">
     <meta name="apple-mobile-web-app-title" content="Voucher Perusahaan">
     <meta name="apple-mobile-web-app-capable" content="yes">
+    <!-- ✅ FIX: Meta theme-color hanya 1x -->
     <meta name="theme-color" content="#667eea">
     
     <link rel="stylesheet" href="style.css">
     
     <link rel="icon" href="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📊</text></svg>">
     
+    <!-- CDN Libraries -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-    
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
     
-    <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#667eea">
+    <!-- ✅ FIX: Gunakan absolute path untuk manifest -->
+    <link rel="manifest" href="/manifest.json">
     
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
@@ -30,17 +31,15 @@
     <!-- ✅ CSS untuk memastikan PDF hanya 2 halaman -->
     <style>
         @media print {
-            /* Batasi hanya 2 halaman untuk voucher */
             .voucher-page {
                 page-break-after: always;
                 page-break-inside: avoid;
-                height: 297mm; /* A4 height */
+                height: 297mm;
                 box-sizing: border-box;
             }
             .voucher-page:last-child {
                 page-break-after: auto;
             }
-            /* Sembunyikan elemen lain saat print */
             .container, .header, .stats, .controls-bar, .footer, #spreadsheetModal {
                 display: none !important;
             }
@@ -53,11 +52,9 @@
             <h1>📊 Dashboard Voucherku</h1>
             <p>Rekap Data Pembuatan Voucher</p>
             <div class="header-actions">
-                <!-- ✅ Tombol Kembali ke Portal -->
                 <a href="/" class="back-to-portal" title="Kembali ke Halaman Utama Portal">
                     🏠 Portal Utama
                 </a>
-                
                 <button id="themeToggle" class="icon-btn" title="Toggle Dark Mode">🌓</button>
                 <span id="offlineBadge" class="offline-badge" style="display:none;">📴 Offline</span>
             </div>
@@ -99,14 +96,12 @@
                 <label for="searchInput">🔍 Cari</label>
                 <input type="text" id="searchInput" placeholder="Cari invoice, keterangan, lokasi...">
             </div>
-            
             <div class="control-group">
                 <label for="companyFilter">🏢 Perusahaan</label>
                 <select id="companyFilter">
                     <option value="all">Semua</option>
                 </select>
             </div>
-            
             <div class="control-group">
                 <label>✅ Status</label>
                 <div class="multi-select">
@@ -120,7 +115,6 @@
                     </label>
                 </div>
             </div>
-            
             <div class="control-group">
                 <label>🔢 Range Nominal</label>
                 <div class="range-inputs">
@@ -129,7 +123,6 @@
                     <input type="number" id="nominalMax" placeholder="Max" class="nominal-filter">
                 </div>
             </div>
-            
             <div class="control-group">
                 <label>📅 Quick Period</label>
                 <div class="quick-periods">
@@ -140,7 +133,6 @@
                     <button class="period-btn" data-period="custom">Custom</button>
                 </div>
             </div>
-            
             <div class="control-group" id="customDateGroup">
                 <label for="dateFrom">📅 Periode Custom</label>
                 <div class="date-range">
@@ -149,13 +141,11 @@
                     <input type="date" id="dateTo" title="Tanggal akhir">
                 </div>
             </div>
-            
             <div class="control-group actions">
                 <button id="syncAllBtn" class="btn btn-warning" style="display:none;">🔄 Sync All</button>
                 <button id="refreshBtn" class="btn btn-primary" title="Sinkronisasi data terbaru">🔄 Refresh</button>
                 <button id="exportPdfBtn" class="btn btn-secondary">📄 Export PDF</button>
                 <button id="exportBtn" class="btn btn-secondary">📥 Export CSV</button>
-                <!-- ✅ NEW: Tombol Lihat Spreadsheet -->
                 <button id="viewSpreadsheetBtn" class="btn btn-secondary" title="Lihat Data Spreadsheet">
                     📊 Spreadsheet
                 </button>
@@ -177,7 +167,6 @@
                 <span>📋 Detail Data Voucher</span>
                 <span id="filteredCount" class="badge">0 data</span>
             </h2>
-            
             <div id="loading" class="loading">⏳ Loading data dari Firestore...</div>
             <div id="error" class="error" style="display: none;"></div>
             <div id="emptyState" class="empty-state" style="display: none;">
@@ -232,12 +221,10 @@
             <!-- HALAMAN 1: FORMULIR PENGAJUAN HO -->
             <div class="voucher-page" id="voucherPage1">
                 <div class="voucher-header">
-                    <!-- Ganti dengan logo perusahaan Anda -->
                     <img src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 60'><text y='40' font-size='24' font-weight='bold'>FINANCESYNC</text></svg>" alt="Logo">
                     <h2>FORMULIR PENGAJUAN HO</h2>
                     <p>FinanceSync Pro • Operational Voucher</p>
                 </div>
-                
                 <table class="voucher-info-table">
                     <tr><td>Lokasi</td><td>: <span id="vLokasi">-</span></td></tr>
                     <tr><td>Tanggal</td><td>: <span id="vTanggal">-</span></td></tr>
@@ -245,7 +232,6 @@
                     <tr><td>Jenis Pengajuan</td><td>: <span id="vJenis">-</span></td></tr>
                     <tr><td>Dibayarkan Kepada</td><td>: <span id="vDibayarkan">-</span></td></tr>
                 </table>
-                
                 <table class="voucher-items-table">
                     <thead>
                         <tr>
@@ -256,27 +242,13 @@
                             <th class="col-total">TOTAL</th>
                         </tr>
                     </thead>
-                    <tbody id="vItemsBody">
-                        <!-- Data item akan diinject via JavaScript -->
-                    </tbody>
+                    <tbody id="vItemsBody"></tbody>
                 </table>
-                
                 <div class="voucher-total-section">
-                    <div class="voucher-total-row">
-                        <span class="voucher-total-label">Subtotal:</span>
-                        <span class="voucher-total-value" id="vSubtotal">Rp 0</span>
-                    </div>
-                    <div class="voucher-total-row">
-                        <span class="voucher-total-label">PPN (0%):</span>
-                        <span class="voucher-total-value">Rp 0</span>
-                    </div>
-                    <div class="voucher-total-row">
-                        <span class="voucher-total-label"><strong>TOTAL:</strong></span>
-                        <span class="voucher-total-value" id="vTotal"><strong>Rp 0</strong></span>
-                    </div>
+                    <div class="voucher-total-row"><span class="voucher-total-label">Subtotal:</span><span class="voucher-total-value" id="vSubtotal">Rp 0</span></div>
+                    <div class="voucher-total-row"><span class="voucher-total-label">PPN (0%):</span><span class="voucher-total-value">Rp 0</span></div>
+                    <div class="voucher-total-row"><span class="voucher-total-label"><strong>TOTAL:</strong></span><span class="voucher-total-value" id="vTotal"><strong>Rp 0</strong></span></div>
                 </div>
-                
-                <!-- ✅ UPDATED: Signature Section - Hanya 2 Penandatangan (Halaman 1) -->
                 <div class="voucher-signature voucher-signature-2cols">
                     <div class="voucher-signature-box">
                         <span class="label">Dibuat Oleh,<br><small>(Finance)</small></span>
@@ -289,10 +261,7 @@
                         <span class="date" id="vApprovedDate">-</span>
                     </div>
                 </div>
-                
-                <div class="voucher-footer-note">
-                    * Dokumen ini sah sebagai bukti pengajuan dana operasional
-                </div>
+                <div class="voucher-footer-note">* Dokumen ini sah sebagai bukti pengajuan dana operasional</div>
             </div>
             
             <div class="voucher-page-separator"></div>
@@ -304,20 +273,13 @@
                     <h2>BUKTI PENGELUARAN KAS / BANK</h2>
                     <p>FinanceSync Pro • Payment Voucher</p>
                 </div>
-                
                 <table class="voucher-info-table">
                     <tr><td>No. Voucher</td><td>: <span id="vVoucherNo">-</span></td></tr>
                     <tr><td>Tanggal Bayar</td><td>: <span id="vBayarTanggal">-</span></td></tr>
                     <tr><td>Dibayarkan Kepada</td><td>: <span id="vPayee">-</span></td></tr>
                     <tr><td>Untuk Keperluan</td><td>: <span id="vKeperluan">-</span></td></tr>
-                    <tr><td>Cara Pembayaran</td><td>: 
-                        <span id="vCaraBayar">
-                            <label><input type="checkbox" checked disabled> Tunai</label>
-                            <label style="margin-left:10px"><input type="checkbox" disabled> Transfer</label>
-                        </span>
-                    </td></tr>
+                    <tr><td>Cara Pembayaran</td><td>: <span id="vCaraBayar"><label><input type="checkbox" checked disabled> Tunai</label><label style="margin-left:10px"><input type="checkbox" disabled> Transfer</label></span></td></tr>
                 </table>
-                
                 <table class="voucher-items-table">
                     <thead>
                         <tr>
@@ -328,190 +290,56 @@
                             <th class="col-total">JUMLAH</th>
                         </tr>
                     </thead>
-                    <tbody id="vItemsBody2">
-                        <!-- Data item akan diinject via JavaScript -->
-                    </tbody>
+                    <tbody id="vItemsBody2"></tbody>
                 </table>
-                
                 <div class="voucher-total-section">
-                    <div class="voucher-total-row">
-                        <span class="voucher-total-label">Total Pembayaran:</span>
-                        <span class="voucher-total-value" id="vTotalBayar"><strong>Rp 0</strong></span>
-                    </div>
-                    <div class="voucher-total-row">
-                        <span class="voucher-total-label">Terbilang:</span>
-                        <span class="voucher-total-value" style="width:200px;font-weight:normal;font-size:9px" id="vTerbilang">-</span>
-                    </div>
+                    <div class="voucher-total-row"><span class="voucher-total-label">Total Pembayaran:</span><span class="voucher-total-value" id="vTotalBayar"><strong>Rp 0</strong></span></div>
+                    <div class="voucher-total-row"><span class="voucher-total-label">Terbilang:</span><span class="voucher-total-value" style="width:200px;font-weight:normal;font-size:9px" id="vTerbilang">-</span></div>
                 </div>
-                
-                <!-- ✅ UPDATED: Signature Section - 4 Penandatangan (Halaman 2) -->
                 <div class="voucher-signature voucher-signature-4cols">
-                    <div class="voucher-signature-box">
-                        <span class="label">Mengetahui,<br><small>(Direktur)</small></span>
-                        <span class="name">Andi Dhiya Salsabila</span>
-                        <span class="date" id="vSig1Date">-</span>
-                    </div>
-                    <div class="voucher-signature-box">
-                        <span class="label">Finance,<br><small>(Manager)</small></span>
-                        <span class="name">Harijon</span>
-                        <span class="date" id="vSig2Date">-</span>
-                    </div>
-                    <div class="voucher-signature-box">
-                        <span class="label">Operasional,<br><small>(Supervisor)</small></span>
-                        <span class="name">Andi Nursyam Halid</span>
-                        <span class="date" id="vSig3Date">-</span>
-                    </div>
-                    <div class="voucher-signature-box">
-                        <span class="label">Penerima,<br><small>(Staff/Vendor)</small></span>
-                        <span class="name" id="vPenerima">Sri Ekowati</span>
-                        <span class="date" id="vSig4Date">-</span>
-                    </div>
+                    <div class="voucher-signature-box"><span class="label">Mengetahui,<br><small>(Direktur)</small></span><span class="name">Andi Dhiya Salsabila</span><span class="date" id="vSig1Date">-</span></div>
+                    <div class="voucher-signature-box"><span class="label">Finance,<br><small>(Manager)</small></span><span class="name">Harijon</span><span class="date" id="vSig2Date">-</span></div>
+                    <div class="voucher-signature-box"><span class="label">Operasional,<br><small>(Supervisor)</small></span><span class="name">Andi Nursyam Halid</span><span class="date" id="vSig3Date">-</span></div>
+                    <div class="voucher-signature-box"><span class="label">Penerima,<br><small>(Staff/Vendor)</small></span><span class="name" id="vPenerima">Sri Ekowati</span><span class="date" id="vSig4Date">-</span></div>
                 </div>
-                
-                <div class="voucher-footer-note">
-                    * Bukti ini sah sebagai tanda terima pembayaran dan dokumen akuntansi
-                </div>
+                <div class="voucher-footer-note">* Bukti ini sah sebagai tanda terima pembayaran dan dokumen akuntansi</div>
             </div>
         </div>
-        
-        <!-- Tombol Print - Hanya muncul di layar, tidak saat print -->
-        <button class="voucher-print-btn" onclick="printVoucher()">
-            🖨️ Print Voucher
-        </button>
+        <button class="voucher-print-btn" onclick="printVoucher()">🖨️ Print Voucher</button>
     </div>
 
-    <!-- ✅ MODAL SPREADSHEET VIEW - TAMPILAN DATA SEPERTI GOOGLE SHEETS -->
+    <!-- ✅ MODAL SPREADSHEET VIEW -->
     <div id="spreadsheetModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 10000; overflow: auto;">
         <div style="background: white; margin: 20px auto; padding: 20px; border-radius: 12px; max-width: 98%; width: 1400px; max-height: 90vh; display: flex; flex-direction: column;">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; padding-bottom: 12px; border-bottom: 2px solid #eee;">
                 <h3 style="margin: 0; color: #333; font-size: 1.3em;">📊 Data Spreadsheet - FinanceSync Pro</h3>
                 <button onclick="closeSpreadsheetModal()" style="background: #ef4444; color: white; border: none; width: 32px; height: 32px; border-radius: 50%; cursor: pointer; font-size: 18px; display: flex; align-items: center; justify-content: center; transition: background 0.2s;">&times;</button>
             </div>
-            
-            <div id="spreadsheetLoading" style="text-align: center; padding: 50px; color: #667eea; font-size: 1.1em;">
-                ⏳ Loading data dari spreadsheet...
-            </div>
-            
-            <div id="spreadsheetContent" style="display: none; flex: 1; overflow: auto;">
-                <!-- Tabel spreadsheet akan dirender di sini via JavaScript -->
-            </div>
-            
+            <div id="spreadsheetLoading" style="text-align: center; padding: 50px; color: #667eea; font-size: 1.1em;">⏳ Loading data dari spreadsheet...</div>
+            <div id="spreadsheetContent" style="display: none; flex: 1; overflow: auto;"></div>
             <div style="margin-top: 15px; padding-top: 12px; border-top: 1px solid #eee; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
-                <button onclick="refreshSpreadsheetData()" class="btn btn-primary" style="padding: 8px 16px; font-size: 0.9em;">
-                    🔄 Refresh Data
-                </button>
+                <button onclick="refreshSpreadsheetData()" class="btn btn-primary" style="padding: 8px 16px; font-size: 0.9em;">🔄 Refresh Data</button>
                 <span id="spreadsheetInfo" style="color: #666; font-size: 0.9em;"></span>
-                <button onclick="exportSpreadsheetToCSV()" class="btn btn-secondary" style="padding: 8px 16px; font-size: 0.9em;">
-                    📥 Export CSV
-                </button>
+                <button onclick="exportSpreadsheetToCSV()" class="btn btn-secondary" style="padding: 8px 16px; font-size: 0.9em;">📥 Export CSV</button>
             </div>
         </div>
     </div>
 
-    <!-- ✅ FIX: Cache buster version updated to v=4.10 -->
-    <script src="script.js?v=4.10"></script>
+    <!-- ✅ FIX: Cache buster + Script utama -->
+    <script src="script.js?v=4.11"></script>
     
+    <!-- ✅ INLINE SCRIPT: Hanya fungsi yang DIPANGGIL LANGSUNG dari HTML attributes -->
     <script>
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                navigator.serviceWorker.register('sw.js').then((registration) => {
-                    console.log('✅ Service Worker registered:', registration.scope);
-                }).catch((err) => {
-                    console.log('❌ Service Worker failed:', err);
-                });
-            });
-        }
-        
-        // ✅ Helper: Format tanggal Indonesia
+        // ✅ Helper: Format tanggal Indonesia (dipakai oleh openVoucherModal)
         function formatTanggalID(tanggal) {
             if (!tanggal || tanggal === '-') return '-';
             try {
                 const date = new Date(tanggal);
-                return date.toLocaleDateString('id-ID', { 
-                    year: 'numeric', 
-                    month: 'short', 
-                    day: 'numeric' 
-                });
-            } catch(e) {
-                return tanggal;
-            }
+                return date.toLocaleDateString('id-ID', { year: 'numeric', month: 'short', day: 'numeric' });
+            } catch(e) { return tanggal; }
         }
         
-        // ✅ Fungsi untuk membuka modal detail voucher
-        function openVoucherModal(data) {
-            // Isi data ke form Page 1
-            document.getElementById('modalInvoiceNo').textContent = data.invoice || '-';
-            document.getElementById('vLokasi').textContent = data.lokasi || '-';
-            document.getElementById('vTanggal').textContent = formatTanggalID(data.tanggal || '-');
-            document.getElementById('vInvoice').textContent = data.invoice || '-';
-            document.getElementById('vJenis').textContent = data.jenis || '-';
-            document.getElementById('vDibayarkan').textContent = data.dibayarkan || '-';
-            document.getElementById('vCreatedBy').textContent = data.createdBy || 'Nur Wahyudi';
-            document.getElementById('vCreatedDate').textContent = formatTanggalID(data.tanggal || '-');
-            document.getElementById('vApprovedDate').textContent = formatTanggalID(data.tanggal || '-');
-            
-            // Isi data ke form Page 2
-            document.getElementById('vVoucherNo').textContent = data.voucherNo || data.invoice || '-';
-            document.getElementById('vBayarTanggal').textContent = formatTanggalID(data.tanggalBayar || data.tanggal || '-');
-            document.getElementById('vPayee').textContent = data.dibayarkan || '-';
-            document.getElementById('vKeperluan').textContent = data.keterangan || '-';
-            document.getElementById('vPemohon').textContent = data.pemohon || '-';
-            document.getElementById('vPemohonDate').textContent = formatTanggalID(data.tanggal || '-');
-            document.getElementById('vBayarDate').textContent = formatTanggalID(data.tanggalBayar || '-');
-            document.getElementById('vPenerima').textContent = data.penerima || data.dibayarkan || 'Sri Ekowati';
-            
-            // Isi tanggal signature Page 2
-            document.getElementById('vSig1Date').textContent = formatTanggalID(data.tanggal || '-');
-            document.getElementById('vSig2Date').textContent = formatTanggalID(data.tanggal || '-');
-            document.getElementById('vSig3Date').textContent = formatTanggalID(data.tanggal || '-');
-            document.getElementById('vSig4Date').textContent = formatTanggalID(data.tanggal || '-');
-            
-            // Format nominal
-            const nominal = parseInt(data.nominal) || 0;
-            const formattedNominal = new Intl.NumberFormat('id-ID', { 
-                style: 'currency', 
-                currency: 'IDR',
-                minimumFractionDigits: 0
-            }).format(nominal);
-            
-            // Isi tabel items (Page 1 & 2)
-            const itemsHtml = `
-                <tr>
-                    <td class="col-no">1</td>
-                    <td class="col-desc">${data.keterangan || '-'}</td>
-                    <td class="col-qty">1</td>
-                    <td class="col-price">${formattedNominal}</td>
-                    <td class="col-total">${formattedNominal}</td>
-                </tr>
-            `;
-            document.getElementById('vItemsBody').innerHTML = itemsHtml;
-            document.getElementById('vItemsBody2').innerHTML = itemsHtml;
-            
-            // Isi total
-            document.getElementById('vSubtotal').textContent = formattedNominal;
-            document.getElementById('vTotal').innerHTML = `<strong>${formattedNominal}</strong>`;
-            document.getElementById('vTotalBayar').innerHTML = `<strong>${formattedNominal}</strong>`;
-            
-            // Terbilang (sederhana)
-            document.getElementById('vTerbilang').textContent = terbilang(nominal) + ' Rupiah';
-            
-            // Tampilkan modal
-            document.getElementById('voucherPrintModal').classList.add('active');
-            document.body.style.overflow = 'hidden';
-        }
-        
-        // ✅ Fungsi untuk menutup modal voucher
-        function closeVoucherModal() {
-            document.getElementById('voucherPrintModal').classList.remove('active');
-            document.body.style.overflow = '';
-        }
-        
-        // ✅ Fungsi untuk print voucher
-        function printVoucher() {
-            window.print();
-        }
-        
-        // ✅ Fungsi terbilang sederhana (IDR)
+        // ✅ Fungsi terbilang (dipanggil dari openVoucherModal)
         function terbilang(n) {
             if (n === 0) return 'Nol';
             const satuan = ["", "Satu", "Dua", "Tiga", "Empat", "Lima", "Enam", "Tujuh", "Delapan", "Sembilan", "Sepuluh", "Sebelas"];
@@ -526,215 +354,92 @@
             return n.toString();
         }
         
-        // ✅ Tutup modal voucher jika klik di luar area konten
-        document.getElementById('voucherPrintModal').addEventListener('click', function(e) {
-            if (e.target === this) {
-                closeVoucherModal();
-            }
-        });
-        
-        // ✅ Tutup modal voucher dengan tombol ESC
-        document.addEventListener('keydown', function(e) {
-            if (e.key === 'Escape') {
-                closeVoucherModal();
-            }
-        });
-        
-        // ═══════════════════════════════════════════════════════
-        // 📊 SPREADSHEET MODAL FUNCTIONS
-        // ═══════════════════════════════════════════════════════
-        
-        function openSpreadsheetModal() {
-            const modal = document.getElementById('spreadsheetModal');
-            const loading = document.getElementById('spreadsheetLoading');
-            const content = document.getElementById('spreadsheetContent');
-            
-            if (modal) {
-                modal.style.display = 'block';
-                document.body.style.overflow = 'hidden';
-                
-                // Show loading
-                if (loading) loading.style.display = 'block';
-                if (content) {
-                    content.style.display = 'none';
-                    content.innerHTML = '';
-                }
-                
-                // Fetch and render data
-                renderSpreadsheetTable();
-            }
-        }
-        
-        function closeSpreadsheetModal() {
-            const modal = document.getElementById('spreadsheetModal');
-            if (modal) {
-                modal.style.display = 'none';
-                document.body.style.overflow = '';
-            }
-        }
-        
-        function refreshSpreadsheetData() {
-            renderSpreadsheetTable();
-        }
-        
-        async function renderSpreadsheetTable() {
-            const loading = document.getElementById('spreadsheetLoading');
-            const content = document.getElementById('spreadsheetContent');
-            const info = document.getElementById('spreadsheetInfo');
-            
+        // ✅ Fungsi untuk membuka modal detail voucher (dipanggil dari onclick di HTML)
+        function openVoucherModal(data) {
             try {
-                // Fetch data dari Apps Script
-                const response = await fetch(APPS_SCRIPT_URL());
-                const result = await response.json();
+                // Page 1
+                document.getElementById('modalInvoiceNo').textContent = data.invoice || '-';
+                document.getElementById('vLokasi').textContent = data.lokasi || '-';
+                document.getElementById('vTanggal').textContent = formatTanggalID(data.tanggal || '-');
+                document.getElementById('vInvoice').textContent = data.invoice || '-';
+                document.getElementById('vJenis').textContent = data.jenis || '-';
+                document.getElementById('vDibayarkan').textContent = data.dibayarkan || '-';
+                document.getElementById('vCreatedBy').textContent = data.createdBy || 'Nur Wahyudi';
+                document.getElementById('vCreatedDate').textContent = formatTanggalID(data.tanggal || '-');
+                document.getElementById('vApprovedDate').textContent = formatTanggalID(data.tanggal || '-');
                 
-                if (!result?.success) throw new Error(result?.message || 'Failed to fetch data');
+                // Page 2
+                document.getElementById('vVoucherNo').textContent = data.voucherNo || data.invoice || '-';
+                document.getElementById('vBayarTanggal').textContent = formatTanggalID(data.tanggalBayar || data.tanggal || '-');
+                document.getElementById('vPayee').textContent = data.dibayarkan || '-';
+                document.getElementById('vKeperluan').textContent = data.keterangan || '-';
+                document.getElementById('vPenerima').textContent = data.penerima || data.dibayarkan || 'Sri Ekowati';
+                document.getElementById('vSig1Date').textContent = formatTanggalID(data.tanggal || '-');
+                document.getElementById('vSig2Date').textContent = formatTanggalID(data.tanggal || '-');
+                document.getElementById('vSig3Date').textContent = formatTanggalID(data.tanggal || '-');
+                document.getElementById('vSig4Date').textContent = formatTanggalID(data.tanggal || '-');
                 
-                const data = normalizeData(result);
+                // Format nominal
+                const nominal = parseInt(data.nominal) || 0;
+                const formattedNominal = new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(nominal);
                 
-                // Render tabel
-                const tableHTML = createSpreadsheetTable(data);
+                // Items table
+                const itemsHtml = `<tr><td class="col-no">1</td><td class="col-desc">${data.keterangan || '-'}</td><td class="col-qty">1</td><td class="col-price">${formattedNominal}</td><td class="col-total">${formattedNominal}</td></tr>`;
+                document.getElementById('vItemsBody').innerHTML = itemsHtml;
+                document.getElementById('vItemsBody2').innerHTML = itemsHtml;
                 
-                if (loading) loading.style.display = 'none';
-                if (content) {
-                    content.innerHTML = tableHTML;
-                    content.style.display = 'block';
-                }
-                if (info) {
-                    info.textContent = `${data.length} data • Updated: ${new Date().toLocaleString('id-ID')}`;
-                }
+                // Totals
+                document.getElementById('vSubtotal').textContent = formattedNominal;
+                document.getElementById('vTotal').innerHTML = `<strong>${formattedNominal}</strong>`;
+                document.getElementById('vTotalBayar').innerHTML = `<strong>${formattedNominal}</strong>`;
+                document.getElementById('vTerbilang').textContent = terbilang(nominal) + ' Rupiah';
                 
-            } catch (error) {
-                console.error('❌ Spreadsheet error:', error);
-                if (loading) {
-                    loading.style.display = 'block';
-                    loading.innerHTML = `❌ Gagal memuat data: ${error.message}`;
-                    loading.style.color = '#ef4444';
-                }
+                // Show modal
+                document.getElementById('voucherPrintModal').classList.add('active');
+                document.body.style.overflow = 'hidden';
+            } catch (err) {
+                console.error('❌ Error opening voucher modal:', err);
+                alert('Gagal membuka detail voucher. Silakan refresh halaman.');
             }
         }
         
-        function createSpreadsheetTable(data) {
-            if (data.length === 0) {
-                return '<div style="text-align: center; padding: 50px; color: #666;">📭 Tidak ada data untuk ditampilkan</div>';
-            }
-            
-            // Define columns sesuai dengan struktur spreadsheet
-            const columns = [
-                { key: 'no', label: 'NO', class: 'col-no', render: (row, index) => index + 1 },
-                { key: 'tanggal', label: 'TANGGAL', class: 'col-tanggal', render: (row) => formatTanggalID(row.tanggal) },
-                { key: 'no_invoice', label: 'NO INVOICE', class: 'col-invoice' },
-                { key: 'company', label: 'COMPANY', class: 'col-company', render: (row) => (row.company || '-').toUpperCase() },
-                { key: 'jenis', label: 'JENIS', class: 'col-jenis' },
-                { key: 'lokasi', label: 'LOKASI', class: 'col-lokasi' },
-                { key: 'isi_invoice', label: 'KETERANGAN', class: 'col-keterangan' },
-                { key: 'nominal', label: 'NOMINAL', class: 'col-nominal', render: (row) => formatRupiah(row.nominal) },
-                { key: 'status', label: 'STATUS', class: 'col-status', render: (row) => renderSpreadsheetStatus(row.status) },
-                { key: 'dibayarkanKepada', label: 'DIBAYARKAN', class: 'col-dibayarkan' },
-                { key: 'file_url', label: 'FILE', class: 'col-file', render: (row) => renderSpreadsheetFileLink(row) }
-            ];
-            
-            // Build table header
-            const headerHTML = columns.map(col => 
-                `<th class="${col.class || ''}">${col.label}</th>`
-            ).join('');
-            
-            // Build table body
-            const rowsHTML = data.map((row, index) => {
-                const cellsHTML = columns.map(col => {
-                    const value = col.render ? col.render(row, index) : (row[col.key] ?? '-');
-                    return `<td class="${col.class || ''}">${value}</td>`;
-                }).join('');
-                
-                return `<tr>${cellsHTML}</tr>`;
-            }).join('');
-            
-            return `
-                <table class="spreadsheet-table">
-                    <thead>
-                        <tr>${headerHTML}</tr>
-                    </thead>
-                    <tbody>
-                        ${rowsHTML}
-                    </tbody>
-                </table>
-            `;
+        // ✅ Fungsi untuk menutup modal voucher
+        function closeVoucherModal() {
+            document.getElementById('voucherPrintModal').classList.remove('active');
+            document.body.style.overflow = '';
         }
         
-        function renderSpreadsheetStatus(status) {
-            const statusClass = status === 'Lunas' ? 'lunas' : 'belum';
-            const statusText = status || 'Belum Lunas';
-            return `<span class="spreadsheet-status ${statusClass}">${statusText}</span>`;
-        }
+        // ✅ Fungsi untuk print voucher
+        function printVoucher() { window.print(); }
         
-        function renderSpreadsheetFileLink(row) {
-            if (!row.file_url || !row.file_url.startsWith('http')) {
-                return '<span style="color: #999;">-</span>';
-            }
-            
-            const fileName = row.file_name || 'Lihat File';
-            return `
-                <a href="${escapeHtml(row.file_url)}" target="_blank" rel="noopener" class="spreadsheet-file-link">
-                    📎 ${escapeHtml(fileName)}
-                </a>
-            `;
-        }
-        
-        function exportSpreadsheetToCSV() {
-            const content = document.getElementById('spreadsheetContent');
-            if (!content || content.style.display === 'none') {
-                alert('Silakan load data terlebih dahulu');
-                return;
-            }
-            
-            // Re-fetch data for export
-            fetch(APPS_SCRIPT_URL())
-                .then(res => res.json())
-                .then(result => {
-                    if (!result?.success) throw new Error('Failed to fetch data');
-                    
-                    const data = normalizeData(result);
-                    const columns = ['tanggal', 'no_invoice', 'company', 'jenis', 'lokasi', 'isi_invoice', 'nominal', 'status', 'dibayarkanKepada', 'file_url'];
-                    const headers = ['Tanggal', 'No Invoice', 'Company', 'Jenis', 'Lokasi', 'Keterangan', 'Nominal', 'Status', 'Dibayarkan', 'Link File'];
-                    
-                    let csv = headers.join(',') + '\n';
-                    data.forEach(row => {
-                        const values = columns.map(col => {
-                            let val = row[col] ?? '';
-                            if (col === 'nominal') val = parseFloat(val) || 0;
-                            if (String(val).includes(',') || String(val).includes('"')) {
-                                val = `"${String(val).replace(/"/g, '""')}"`;
-                            }
-                            return val;
-                        });
-                        csv += values.join(',') + '\n';
-                    });
-                    
-                    const blob = new Blob(['\ufeff' + csv], { type: 'text/csv;charset=utf-8;' });
-                    const url = URL.createObjectURL(blob);
-                    const link = document.createElement('a');
-                    link.href = url;
-                    link.download = `spreadsheet-export-${new Date().toISOString().slice(0,10)}.csv`;
-                    link.click();
-                    URL.revokeObjectURL(url);
-                })
-                .catch(err => {
-                    console.error('Export error:', err);
-                    alert('Gagal export CSV: ' + err.message);
-                });
-        }
-        
-        // Close spreadsheet modal when clicking outside
-        document.getElementById('spreadsheetModal')?.addEventListener('click', function(e) {
-            if (e.target === this) {
-                closeSpreadsheetModal();
-            }
+        // ✅ Event listener: Tutup modal voucher jika klik di luar
+        document.getElementById('voucherPrintModal')?.addEventListener('click', function(e) {
+            if (e.target === this) closeVoucherModal();
         });
         
-        // Close modal with ESC key
+        // ✅ Event listener: Tutup modal dengan ESC
         document.addEventListener('keydown', function(e) {
-            if (e.key === 'Escape') {
-                closeSpreadsheetModal();
-            }
+            if (e.key === 'Escape') closeVoucherModal();
+        });
+        
+        // ✅ FIX: Service Worker dengan absolute path (dipindah dari inline script yang duplikat)
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                // ✅ Gunakan absolute path agar ter-register dari root domain
+                navigator.serviceWorker.register('/sw.js')
+                    .then((registration) => {
+                        console.log('✅ Service Worker registered:', registration.scope);
+                    })
+                    .catch((err) => {
+                        console.log('❌ Service Worker failed:', err);
+                    });
+            });
+        }
+        
+        // ✅ CDN Fallback Check (opsional tapi recommended)
+        window.addEventListener('load', () => {
+            if (typeof Chart === 'undefined') console.warn('⚠️ Chart.js failed to load');
+            if (typeof window.jspdf === 'undefined') console.warn('⚠️ jsPDF failed to load');
         });
     </script>
 </body>
