@@ -9,11 +9,9 @@
     <meta name="application-name" content="Dashboard Voucher Perusahaan">
     <meta name="apple-mobile-web-app-title" content="Voucher Perusahaan">
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <!-- ✅ FIX: Meta theme-color hanya 1x -->
     <meta name="theme-color" content="#667eea">
     
     <link rel="stylesheet" href="style.css">
-    
     <link rel="icon" href="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📊</text></svg>">
     
     <!-- CDN Libraries -->
@@ -21,14 +19,14 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
     
-    <!-- ✅ FIX: Gunakan absolute path untuk manifest -->
+    <!-- PWA Manifest -->
     <link rel="manifest" href="/manifest.json">
     
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
     
-    <!-- ✅ CSS untuk memastikan PDF hanya 2 halaman -->
+    <!-- Print Styles -->
     <style>
         @media print {
             .voucher-page {
@@ -37,11 +35,141 @@
                 height: 297mm;
                 box-sizing: border-box;
             }
-            .voucher-page:last-child {
-                page-break-after: auto;
-            }
+            .voucher-page:last-child { page-break-after: auto; }
             .container, .header, .stats, .controls-bar, .footer, #spreadsheetModal {
                 display: none !important;
+            }
+        }
+
+        /* ✅ Advanced Filter Panel Styles */
+        .advanced-filter-panel {
+            grid-column: 1 / -1;
+            background: rgba(30, 41, 59, 0.8);
+            border: 1px solid rgba(99, 102, 241, 0.3);
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 12px;
+            animation: slideDown 0.2s ease;
+        }
+
+        @keyframes slideDown {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .filter-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+
+        .filter-item label {
+            display: block;
+            font-size: 0.85rem;
+            color: #94a3b8;
+            margin-bottom: 4px;
+            font-weight: 500;
+        }
+
+        .filter-select, .filter-input {
+            width: 100%;
+            padding: 8px 12px;
+            background: rgba(15, 23, 42, 0.8);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 8px;
+            color: #fff;
+            font-size: 0.9rem;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+
+        .filter-select:focus, .filter-input:focus {
+            outline: none;
+            border-color: #6366f1;
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
+        }
+
+        .filter-actions {
+            display: flex;
+            gap: 8px;
+            justify-content: flex-end;
+            flex-wrap: wrap;
+        }
+
+        .filter-badge {
+            background: #6366f1;
+            color: white;
+            font-size: 0.7rem;
+            padding: 2px 6px;
+            border-radius: 10px;
+            margin-left: 4px;
+            font-weight: 600;
+        }
+
+        .toggle-icon {
+            display: inline-block;
+            margin-left: 4px;
+            transition: transform 0.2s;
+        }
+
+        #toggleAdvancedFilter.active .toggle-icon {
+            transform: rotate(180deg);
+        }
+
+        .btn-outline {
+            background: transparent;
+            border: 1px solid rgba(255,255,255,0.2);
+            color: #fff;
+            padding: 8px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            transition: all 0.2s;
+        }
+
+        .btn-outline:hover {
+            background: rgba(99, 102, 241, 0.2);
+            border-color: #6366f1;
+        }
+
+        .btn-text {
+            background: none;
+            border: none;
+            color: #94a3b8;
+            cursor: pointer;
+            font-size: 0.9rem;
+            padding: 8px 12px;
+            transition: color 0.2s;
+        }
+
+        .btn-text:hover { color: #fff; }
+
+        /* Search group styling */
+        .search-group {
+            grid-column: 1 / -1;
+        }
+
+        .search-group input {
+            width: 100%;
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .controls-bar {
+                flex-wrap: wrap;
+                gap: 12px;
+            }
+            .control-group {
+                min-width: 100%;
+            }
+            .filter-grid {
+                grid-template-columns: 1fr;
+            }
+            .filter-actions {
+                justify-content: flex-start;
             }
         }
     </style>
@@ -91,17 +219,78 @@
             </div>
         </div>
         
+        <!-- ✅ UPDATED: Controls Bar dengan Filter Spesifik -->
         <div class="controls-bar">
-            <div class="control-group">
-                <label for="searchInput">🔍 Cari</label>
-                <input type="text" id="searchInput" placeholder="Cari invoice, keterangan, lokasi...">
+            <!-- Search Utama (Full Width) -->
+            <div class="control-group search-group">
+                <label for="searchInput">🔍 Cari Cepat</label>
+                <input type="text" id="searchInput" placeholder="Cari invoice, keterangan, lokasi, nama penerima...">
             </div>
+            
+            <!-- Company Filter (Selalu Tampil) -->
             <div class="control-group">
                 <label for="companyFilter">🏢 Perusahaan</label>
-                <select id="companyFilter">
+                <select id="companyFilter" class="filter-select">
                     <option value="all">Semua</option>
                 </select>
             </div>
+            
+            <!-- Tombol Toggle Filter Lanjutan -->
+            <div class="control-group">
+                <label>&nbsp;</label>
+                <button id="toggleAdvancedFilter" class="btn btn-outline" type="button">
+                    ⚙️ Filter Lanjutan <span id="filterBadge" class="filter-badge" style="display:none;">0</span>
+                    <span class="toggle-icon">▼</span>
+                </button>
+            </div>
+            
+            <!-- Panel Filter Lanjutan (Hidden by Default) -->
+            <div id="advancedFilterPanel" class="advanced-filter-panel" style="display:none;">
+                <div class="filter-grid">
+                    <!-- Jenis Pengajuan -->
+                    <div class="filter-item">
+                        <label for="jenisFilter">📋 Jenis Pengajuan</label>
+                        <select id="jenisFilter" class="filter-select">
+                            <option value="all">Semua</option>
+                            <option value="Operasional">Operasional</option>
+                            <option value="Project">Project</option>
+                            <option value="Maintenance">Maintenance</option>
+                            <option value="Lainnya">Lainnya</option>
+                        </select>
+                    </div>
+                    
+                    <!-- Nama Penerima -->
+                    <div class="filter-item">
+                        <label for="penerimaFilter">👤 Nama Penerima</label>
+                        <input type="text" id="penerimaFilter" placeholder="Cari nama penerima..." class="filter-input">
+                    </div>
+                    
+                    <!-- Keterangan -->
+                    <div class="filter-item">
+                        <label for="keteranganFilter">📝 Keterangan</label>
+                        <input type="text" id="keteranganFilter" placeholder="Cari dalam keterangan..." class="filter-input">
+                    </div>
+                    
+                    <!-- Range Nominal -->
+                    <div class="filter-item">
+                        <label>💰 Range Nominal</label>
+                        <div class="range-inputs">
+                            <input type="number" id="nominalMin" placeholder="Min" class="filter-input nominal-filter">
+                            <span>-</span>
+                            <input type="number" id="nominalMax" placeholder="Max" class="filter-input nominal-filter">
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Action Buttons -->
+                <div class="filter-actions">
+                    <button id="applyFilterBtn" class="btn btn-primary">✅ Terapkan Filter</button>
+                    <button id="clearFilterBtn" class="btn btn-outline">🗑️ Reset Filter</button>
+                    <button id="closeFilterPanelBtn" class="btn btn-text">Tutup Panel</button>
+                </div>
+            </div>
+            
+            <!-- Status Filter Checkboxes -->
             <div class="control-group">
                 <label>✅ Status</label>
                 <div class="multi-select">
@@ -115,14 +304,8 @@
                     </label>
                 </div>
             </div>
-            <div class="control-group">
-                <label>🔢 Range Nominal</label>
-                <div class="range-inputs">
-                    <input type="number" id="nominalMin" placeholder="Min" class="nominal-filter">
-                    <span>-</span>
-                    <input type="number" id="nominalMax" placeholder="Max" class="nominal-filter">
-                </div>
-            </div>
+            
+            <!-- Quick Period -->
             <div class="control-group">
                 <label>📅 Quick Period</label>
                 <div class="quick-periods">
@@ -133,6 +316,8 @@
                     <button class="period-btn" data-period="custom">Custom</button>
                 </div>
             </div>
+            
+            <!-- Custom Date Range -->
             <div class="control-group" id="customDateGroup">
                 <label for="dateFrom">📅 Periode Custom</label>
                 <div class="date-range">
@@ -141,6 +326,8 @@
                     <input type="date" id="dateTo" title="Tanggal akhir">
                 </div>
             </div>
+            
+            <!-- Action Buttons -->
             <div class="control-group actions">
                 <button id="syncAllBtn" class="btn btn-warning" style="display:none;">🔄 Sync All</button>
                 <button id="refreshBtn" class="btn btn-primary" title="Sinkronisasi data terbaru">🔄 Refresh</button>
@@ -325,12 +512,253 @@
         </div>
     </div>
 
-    <!-- ✅ FIX: Cache buster + Script utama -->
-    <script src="script.js?v=4.11"></script>
+    <!-- ✅ Script Utama -->
+    <script src="script.js?v=4.12"></script>
     
-    <!-- ✅ INLINE SCRIPT: Hanya fungsi yang DIPANGGIL LANGSUNG dari HTML attributes -->
+    <!-- ✅ INLINE SCRIPT: Filter System + Helper Functions -->
     <script>
-        // ✅ Helper: Format tanggal Indonesia (dipakai oleh openVoucherModal)
+        // ═══════════════════════════════════════════════════════
+        // 🎯 ADVANCED FILTER SYSTEM - FinanceSync Pro Dashboard
+        // ═══════════════════════════════════════════════════════
+        
+        document.addEventListener('DOMContentLoaded', () => {
+            
+            // --- Filter State Management ---
+            const filterState = {
+                search: '',
+                company: 'all',
+                jenis: 'all',
+                penerima: '',
+                keterangan: '',
+                nominalMin: null,
+                nominalMax: null,
+                period: 'month',
+                dateFrom: null,
+                dateTo: null,
+                statuses: ['Lunas', 'Belum Lunas']
+            };
+            
+            // --- DOM Elements Cache ---
+            const elements = {
+                toggleBtn: document.getElementById('toggleAdvancedFilter'),
+                filterPanel: document.getElementById('advancedFilterPanel'),
+                filterBadge: document.getElementById('filterBadge'),
+                applyBtn: document.getElementById('applyFilterBtn'),
+                clearBtn: document.getElementById('clearFilterBtn'),
+                closePanelBtn: document.getElementById('closeFilterPanelBtn'),
+                // Filter inputs
+                jenisFilter: document.getElementById('jenisFilter'),
+                penerimaFilter: document.getElementById('penerimaFilter'),
+                keteranganFilter: document.getElementById('keteranganFilter'),
+                nominalMin: document.getElementById('nominalMin'),
+                nominalMax: document.getElementById('nominalMax'),
+                companyFilter: document.getElementById('companyFilter'),
+                searchInput: document.getElementById('searchInput'),
+                statusFilters: document.querySelectorAll('.status-filter'),
+                periodBtns: document.querySelectorAll('.period-btn'),
+                dateFrom: document.getElementById('dateFrom'),
+                dateTo: document.getElementById('dateTo'),
+                customDateGroup: document.getElementById('customDateGroup')
+            };
+            
+            // --- Toggle Advanced Filter Panel ---
+            if (elements.toggleBtn && elements.filterPanel) {
+                elements.toggleBtn.addEventListener('click', () => {
+                    const isHidden = elements.filterPanel.style.display === 'none' || !elements.filterPanel.style.display;
+                    elements.filterPanel.style.display = isHidden ? 'block' : 'none';
+                    elements.toggleBtn.classList.toggle('active', isHidden);
+                    if (isHidden) updateFilterBadge();
+                });
+            }
+            
+            if (elements.closePanelBtn) {
+                elements.closePanelBtn.addEventListener('click', () => {
+                    if (elements.filterPanel) elements.filterPanel.style.display = 'none';
+                    if (elements.toggleBtn) elements.toggleBtn.classList.remove('active');
+                });
+            }
+            
+            // --- Update Badge Counter ---
+            function updateFilterBadge() {
+                let count = 0;
+                if (filterState.jenis !== 'all') count++;
+                if (filterState.penerima) count++;
+                if (filterState.keterangan) count++;
+                if (filterState.nominalMin !== null || filterState.nominalMax !== null) count++;
+                
+                if (elements.filterBadge) {
+                    if (count > 0) {
+                        elements.filterBadge.textContent = count;
+                        elements.filterBadge.style.display = 'inline';
+                    } else {
+                        elements.filterBadge.style.display = 'none';
+                    }
+                }
+            }
+            
+            // --- Event Listeners untuk Filter Inputs ---
+            if (elements.jenisFilter) {
+                elements.jenisFilter.addEventListener('change', (e) => {
+                    filterState.jenis = e.target.value;
+                    updateFilterBadge();
+                    saveFilters();
+                    applyFilters();
+                });
+            }
+            
+            if (elements.penerimaFilter) {
+                elements.penerimaFilter.addEventListener('input', debounce((e) => {
+                    filterState.penerima = e.target.value.toLowerCase().trim();
+                    updateFilterBadge();
+                    saveFilters();
+                    applyFilters();
+                }, 300));
+            }
+            
+            if (elements.keteranganFilter) {
+                elements.keteranganFilter.addEventListener('input', debounce((e) => {
+                    filterState.keterangan = e.target.value.toLowerCase().trim();
+                    updateFilterBadge();
+                    saveFilters();
+                    applyFilters();
+                }, 300));
+            }
+            
+            if (elements.nominalMin) {
+                elements.nominalMin.addEventListener('change', (e) => {
+                    filterState.nominalMin = e.target.value ? parseInt(e.target.value) : null;
+                    updateFilterBadge();
+                    saveFilters();
+                    applyFilters();
+                });
+            }
+            
+            if (elements.nominalMax) {
+                elements.nominalMax.addEventListener('change', (e) => {
+                    filterState.nominalMax = e.target.value ? parseInt(e.target.value) : null;
+                    updateFilterBadge();
+                    saveFilters();
+                    applyFilters();
+                });
+            }
+            
+            // --- Apply Filter Button ---
+            if (elements.applyBtn) {
+                elements.applyBtn.addEventListener('click', () => {
+                    console.log('🔍 Menerapkan filter:', filterState);
+                    applyFilters();
+                    // Optional: close panel after apply
+                    // elements.filterPanel.style.display = 'none';
+                    // elements.toggleBtn.classList.remove('active');
+                });
+            }
+            
+            // --- Clear/Reset Filter Button ---
+            if (elements.clearBtn) {
+                elements.clearBtn.addEventListener('click', () => {
+                    // Reset UI
+                    if (elements.jenisFilter) elements.jenisFilter.value = 'all';
+                    if (elements.penerimaFilter) elements.penerimaFilter.value = '';
+                    if (elements.keteranganFilter) elements.keteranganFilter.value = '';
+                    if (elements.nominalMin) elements.nominalMin.value = '';
+                    if (elements.nominalMax) elements.nominalMax.value = '';
+                    
+                    // Reset State
+                    filterState.jenis = 'all';
+                    filterState.penerima = '';
+                    filterState.keterangan = '';
+                    filterState.nominalMin = null;
+                    filterState.nominalMax = null;
+                    
+                    updateFilterBadge();
+                    saveFilters();
+                    console.log('🗑️ Filter di-reset');
+                    applyFilters();
+                });
+            }
+            
+            // --- Load Saved Filters from localStorage ---
+            function loadSavedFilters() {
+                try {
+                    const saved = localStorage.getItem('financesync_dashboard_filters');
+                    if (saved) {
+                        const parsed = JSON.parse(saved);
+                        Object.assign(filterState, parsed);
+                        
+                        // Apply to UI
+                        if (filterState.jenis !== 'all' && elements.jenisFilter) {
+                            elements.jenisFilter.value = filterState.jenis;
+                        }
+                        if (filterState.penerima && elements.penerimaFilter) {
+                            elements.penerimaFilter.value = filterState.penerima;
+                        }
+                        if (filterState.keterangan && elements.keteranganFilter) {
+                            elements.keteranganFilter.value = filterState.keterangan;
+                        }
+                        if (filterState.nominalMin && elements.nominalMin) {
+                            elements.nominalMin.value = filterState.nominalMin;
+                        }
+                        if (filterState.nominalMax && elements.nominalMax) {
+                            elements.nominalMax.value = filterState.nominalMax;
+                        }
+                        
+                        updateFilterBadge();
+                        console.log('📦 Filter dimuat dari localStorage');
+                    }
+                } catch (e) {
+                    console.warn('⚠️ Gagal memuat filter dari localStorage:', e);
+                }
+            }
+            
+            // --- Save Filters to localStorage ---
+            function saveFilters() {
+                try {
+                    localStorage.setItem('financesync_dashboard_filters', JSON.stringify(filterState));
+                } catch (e) {
+                    console.warn('⚠️ Gagal menyimpan filter:', e);
+                }
+            }
+            
+            // --- Debounce Helper ---
+            function debounce(func, wait) {
+                let timeout;
+                return function executedFunction(...args) {
+                    const later = () => {
+                        clearTimeout(timeout);
+                        func(...args);
+                    };
+                    clearTimeout(timeout);
+                    timeout = setTimeout(later, wait);
+                };
+            }
+            
+            // --- Apply Filters Function (Integrates with script.js) ---
+            function applyFilters() {
+                // Update global filter state if exists
+                if (typeof window.advancedFilterState !== 'undefined') {
+                    window.advancedFilterState = { ...filterState };
+                }
+                
+                // Trigger existing applyFilters from script.js if available
+                if (typeof window.applyFilters === 'function') {
+                    window.applyFilters();
+                }
+            }
+            
+            // --- Initialize: Load saved filters ---
+            loadSavedFilters();
+            
+            // --- Expose functions globally for script.js integration ---
+            window.getAdvancedFilterState = () => ({ ...filterState });
+            window.updateAdvancedFilterBadge = updateFilterBadge;
+            
+        }); // End DOMContentLoaded
+        
+        // ═══════════════════════════════════════════════════════
+        // 🔧 HELPER FUNCTIONS (Called from HTML attributes)
+        // ═══════════════════════════════════════════════════════
+        
+        // Format tanggal Indonesia
         function formatTanggalID(tanggal) {
             if (!tanggal || tanggal === '-') return '-';
             try {
@@ -339,7 +767,7 @@
             } catch(e) { return tanggal; }
         }
         
-        // ✅ Fungsi terbilang (dipanggil dari openVoucherModal)
+        // Fungsi terbilang
         function terbilang(n) {
             if (n === 0) return 'Nol';
             const satuan = ["", "Satu", "Dua", "Tiga", "Empat", "Lima", "Enam", "Tujuh", "Delapan", "Sembilan", "Sepuluh", "Sebelas"];
@@ -354,7 +782,7 @@
             return n.toString();
         }
         
-        // ✅ Fungsi untuk membuka modal detail voucher (dipanggil dari onclick di HTML)
+        // Buka modal voucher detail
         function openVoucherModal(data) {
             try {
                 // Page 1
@@ -403,29 +831,28 @@
             }
         }
         
-        // ✅ Fungsi untuk menutup modal voucher
+        // Tutup modal voucher
         function closeVoucherModal() {
             document.getElementById('voucherPrintModal').classList.remove('active');
             document.body.style.overflow = '';
         }
         
-        // ✅ Fungsi untuk print voucher
+        // Print voucher
         function printVoucher() { window.print(); }
         
-        // ✅ Event listener: Tutup modal voucher jika klik di luar
+        // Event listener: Tutup modal voucher jika klik di luar
         document.getElementById('voucherPrintModal')?.addEventListener('click', function(e) {
             if (e.target === this) closeVoucherModal();
         });
         
-        // ✅ Event listener: Tutup modal dengan ESC
+        // Event listener: Tutup modal dengan ESC
         document.addEventListener('keydown', function(e) {
             if (e.key === 'Escape') closeVoucherModal();
         });
         
-        // ✅ FIX: Service Worker dengan absolute path (dipindah dari inline script yang duplikat)
+        // Service Worker Registration
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
-                // ✅ Gunakan absolute path agar ter-register dari root domain
                 navigator.serviceWorker.register('/sw.js')
                     .then((registration) => {
                         console.log('✅ Service Worker registered:', registration.scope);
@@ -436,7 +863,7 @@
             });
         }
         
-        // ✅ CDN Fallback Check (opsional tapi recommended)
+        // CDN Fallback Check
         window.addEventListener('load', () => {
             if (typeof Chart === 'undefined') console.warn('⚠️ Chart.js failed to load');
             if (typeof window.jspdf === 'undefined') console.warn('⚠️ jsPDF failed to load');
