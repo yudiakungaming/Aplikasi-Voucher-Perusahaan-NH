@@ -22,15 +22,91 @@
   <style>
     body { font-family: 'Space Grotesk', sans-serif; background-color: #0a0f1a; color: #fff; }
     .glass-card { background: rgba(19, 27, 46, 0.7); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.1); }
+    
+    /* 🕐 Real-Time Clock Styles */
+    .datetime-widget {
+      background: linear-gradient(135deg, rgba(99, 102, 241, 0.15) 0%, rgba(168, 85, 247, 0.15) 100%);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(99, 102, 241, 0.3);
+      border-radius: 16px;
+      padding: 20px 30px;
+      margin: 20px auto;
+      max-width: 400px;
+      box-shadow: 0 8px 32px rgba(99, 102, 241, 0.2);
+      animation: slideDown 0.5s ease;
+    }
+    
+    @keyframes slideDown {
+      from { opacity: 0; transform: translateY(-20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    
+    .clock-time {
+      font-size: 3rem;
+      font-weight: 700;
+      background: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      font-family: 'Courier New', monospace;
+      letter-spacing: 3px;
+      text-shadow: 0 0 30px rgba(99, 102, 241, 0.5);
+      transition: transform 0.2s ease;
+    }
+    
+    .clock-time.pulse {
+      animation: pulse 0.3s ease;
+    }
+    
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.05); }
+    }
+    
+    .clock-date {
+      font-size: 1rem;
+      color: #94a3b8;
+      margin-top: 8px;
+      text-transform: capitalize;
+      font-weight: 500;
+    }
+    
+    .clock-timezone {
+      display: inline-block;
+      margin-top: 10px;
+      padding: 4px 12px;
+      background: rgba(99, 102, 241, 0.2);
+      border: 1px solid rgba(99, 102, 241, 0.4);
+      border-radius: 20px;
+      font-size: 0.75rem;
+      color: #6366f1;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+    }
+    
+    @media (max-width: 640px) {
+      .clock-time { font-size: 2.2rem; }
+      .clock-date { font-size: 0.9rem; }
+      .datetime-widget { padding: 15px 20px; }
+    }
   </style>
 </head>
 <body class="min-h-screen flex flex-col items-center justify-center p-6">
   
   <!-- Logo / Title -->
-  <div class="text-center mb-12">
+  <div class="text-center mb-8">
     <div class="text-5xl mb-4">💰</div>
     <h1 class="text-3xl font-bold mb-2">Voucher Perusahaan</h1>
     <p class="text-gray-400">Silakan pilih aplikasi yang ingin Anda buka:</p>
+  </div>
+
+  <!-- 🕐 Real-Time Clock Widget (WIB) -->
+  <div class="datetime-widget">
+    <div class="text-center">
+      <div id="realTimeClock" class="clock-time">00:00:00</div>
+      <div id="realDateDisplay" class="clock-date">Memuat tanggal...</div>
+      <div class="clock-timezone">🌏 WIB (UTC+7)</div>
+    </div>
   </div>
 
   <!-- Pilihan Aplikasi -->
@@ -105,6 +181,64 @@
       // Opsional: sembunyikan tombol install setelah terinstall
       // document.getElementById('installBtn')?.classList.add('hidden');
     });
+  </script>
+
+  <!-- 🕐 Real-Time Clock Script (WIB) -->
+  <script>
+    // ═══════════════════════════════════════════════════════
+    // 🕐 REAL-TIME CLOCK - WIB (Western Indonesian Time)
+    // ═══════════════════════════════════════════════════════
+    
+    function updateDateTime() {
+      const now = new Date();
+      
+      // Convert to WIB (UTC+7)
+      const wibOffset = 7 * 60 * 60 * 1000; // 7 hours in milliseconds
+      const wibTime = new Date(now.getTime() + wibOffset);
+      
+      // Format time HH:MM:SS
+      const hours = String(wibTime.getUTCHours()).padStart(2, '0');
+      const minutes = String(wibTime.getUTCMinutes()).padStart(2, '0');
+      const seconds = String(wibTime.getUTCSeconds()).padStart(2, '0');
+      
+      // Format date with Indonesian locale
+      const days = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
+      const months = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 
+                      'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
+      
+      const dayName = days[wibTime.getUTCDay()];
+      const date = wibTime.getUTCDate();
+      const monthName = months[wibTime.getUTCMonth()];
+      const year = wibTime.getUTCFullYear();
+      
+      // Update DOM elements
+      const clockEl = document.getElementById('realTimeClock');
+      const dateEl = document.getElementById('realDateDisplay');
+      
+      if (clockEl) {
+        const newTime = `${hours}:${minutes}:${seconds}`;
+        // Only update if changed to avoid unnecessary reflows
+        if (clockEl.textContent !== newTime) {
+          clockEl.textContent = newTime;
+          // Add pulse animation every minute
+          if (minutes === '00' && seconds === '00') {
+            clockEl.classList.add('pulse');
+            setTimeout(() => clockEl.classList.remove('pulse'), 300);
+          }
+        }
+      }
+      
+      if (dateEl) {
+        dateEl.textContent = `${dayName}, ${date} ${monthName} ${year}`;
+      }
+    }
+    
+    // Update immediately and then every second
+    updateDateTime();
+    setInterval(updateDateTime, 1000);
+    
+    // Log for debugging
+    console.log('🕐 Real-time clock initialized (WIB/UTC+7)');
   </script>
 
 </body>
