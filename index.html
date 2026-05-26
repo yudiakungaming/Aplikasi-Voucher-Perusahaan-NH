@@ -18,13 +18,24 @@
   <link rel="icon" type="image/png" sizes="512x512" href="/icons/icon-512x512.png">
   
   <script src="https://cdn.tailwindcss.com"></script>
-  <!-- Chart.js dihapus karena mini chart sudah dihilangkan -->
   <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   
   <style>
-    body { font-family: 'Space Grotesk', sans-serif; background-color: #0a0f1a; color: #fff; }
-    .glass-card { background: rgba(19, 27, 46, 0.7); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.1); }
+    body { 
+      font-family: 'Space Grotesk', sans-serif; 
+      background-color: #0a0f1a; 
+      color: #fff; 
+      margin: 0;
+      padding: 0;
+      overflow-x: hidden;
+    }
+    
+    .glass-card { 
+      background: rgba(19, 27, 46, 0.7); 
+      backdrop-filter: blur(10px); 
+      border: 1px solid rgba(255,255,255,0.1); 
+    }
     
     /* 🕐 Real-Time Clock Styles */
     .datetime-widget {
@@ -34,7 +45,8 @@
       border-radius: 16px;
       padding: 20px 30px;
       margin: 20px auto;
-      max-width: 400px;
+      max-width: 450px;
+      width: 90%;
       box-shadow: 0 8px 32px rgba(99, 102, 241, 0.2);
       animation: slideDown 0.5s ease;
     }
@@ -94,6 +106,8 @@
       flex-wrap: wrap;
       justify-content: center;
       margin: 25px 0;
+      width: 100%;
+      max-width: 600px;
     }
     
     .quick-action-btn {
@@ -109,6 +123,8 @@
       gap: 6px;
       transition: all 0.3s ease;
       min-width: 100px;
+      flex: 1;
+      max-width: 150px;
     }
     
     .quick-action-btn:hover {
@@ -136,6 +152,7 @@
       padding: 15px 20px;
       margin: 20px auto;
       max-width: 600px;
+      width: 90%;
       display: none;
       align-items: center;
       gap: 15px;
@@ -300,6 +317,14 @@
     .chat-menu-item.email { color: #f59e0b; }
     .chat-menu-item.faq { color: #a855f7; }
 
+    /* Main container */
+    .main-container {
+      width: 100%;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+
     @media (max-width: 640px) {
       .clock-time { font-size: 2.2rem; }
       .clock-date { font-size: 0.9rem; }
@@ -312,86 +337,88 @@
     }
   </style>
 </head>
-<body class="min-h-screen flex flex-col items-center justify-center p-6">
+<body>
   
-  <!-- Logo / Title -->
-  <div class="text-center mb-6">
-    <div class="text-5xl mb-4">💰</div>
-    <h1 class="text-3xl font-bold mb-2">Voucher Perusahaan</h1>
-    <p class="text-gray-400">Silakan pilih aplikasi yang ingin Anda buka:</p>
-  </div>
-
-  <!-- 📱 PWA Install Banner (Feature #6) -->
-  <div id="pwaInstallBanner" class="pwa-install-banner">
-    <div class="pwa-icon">📱</div>
-    <div class="pwa-content">
-      <div class="pwa-title">Install Aplikasi</div>
-      <div class="pwa-desc">Pasang aplikasi untuk akses lebih cepat</div>
+  <div class="main-container">
+    <!-- Logo / Title -->
+    <div class="text-center mb-6">
+      <div class="text-5xl mb-4">💰</div>
+      <h1 class="text-3xl font-bold mb-2">Voucher Perusahaan</h1>
+      <p class="text-gray-400">Silakan pilih aplikasi yang ingin Anda buka:</p>
     </div>
-    <div class="pwa-buttons">
-      <button class="btn-install" onclick="installPWA()">
-        <i class="fas fa-download"></i> Install
-      </button>
-      <button class="btn-later" onclick="dismissPWA()">Nanti</button>
-    </div>
-  </div>
 
-  <!-- 🕐 Real-Time Clock Widget (WIB) -->
-  <div class="datetime-widget">
-    <div class="text-center">
-      <div id="realTimeClock" class="clock-time">00:00:00</div>
-      <div id="realDateDisplay" class="clock-date">Memuat tanggal...</div>
-      <div class="clock-timezone">🌏 WIB (UTC+7)</div>
-    </div>
-  </div>
-
-  <!-- ⚡ Quick Actions (Feature #8) -->
-  <div class="quick-actions">
-    <a href="./apps/input-voucher/" class="quick-action-btn">
-      <i class="fas fa-plus-circle"></i>
-      <span>Input Baru</span>
-    </a>
-    <a href="./apps/dashboard-voucher/" class="quick-action-btn">
-      <i class="fas fa-chart-line"></i>
-      <span>Dashboard</span>
-    </a>
-    <a href="#" onclick="exportQuick(); return false;" class="quick-action-btn">
-      <i class="fas fa-file-export"></i>
-      <span>Export CSV</span>
-    </a>
-    <a href="#" onclick="syncData(); return false;" class="quick-action-btn">
-      <i class="fas fa-sync-alt"></i>
-      <span>Sync Data</span>
-    </a>
-  </div>
-
-  <!-- Pilihan Aplikasi -->
-  <div class="grid md:grid-cols-2 gap-8 w-full max-w-3xl">
-    
-    <!-- Card 1: Input Voucher -->
-    <a href="./apps/input-voucher/" class="glass-card p-8 rounded-2xl hover:border-indigo-500 transition-all group block">
-      <div class="text-4xl mb-4 group-hover:scale-110 transition-transform">📝</div>
-      <h2 class="text-xl font-bold text-indigo-300 mb-2">Input Voucher</h2>
-      <p class="text-sm text-gray-400 mb-6">Formulir pengajuan, upload bukti, dan pencatatan transaksi keuangan.</p>
-      <div class="bg-indigo-600 text-white py-2 px-4 rounded-lg text-center font-semibold text-sm group-hover:bg-indigo-500 transition-colors">
-        Buka Aplikasi Input
+    <!-- 📱 PWA Install Banner (Feature #6) -->
+    <div id="pwaInstallBanner" class="pwa-install-banner">
+      <div class="pwa-icon">📱</div>
+      <div class="pwa-content">
+        <div class="pwa-title">Install Aplikasi</div>
+        <div class="pwa-desc">Pasang aplikasi untuk akses lebih cepat</div>
       </div>
-    </a>
-
-    <!-- Card 2: Dashboard -->
-    <a href="./apps/dashboard-voucher/" class="glass-card p-8 rounded-2xl hover:border-emerald-500 transition-all group block">
-      <div class="text-4xl mb-4 group-hover:scale-110 transition-transform">📊</div>
-      <h2 class="text-xl font-bold text-emerald-300 mb-2">Dashboard & Rekap</h2>
-      <p class="text-sm text-gray-400 mb-6">Monitoring data, grafik statistik, dan export laporan PDF/CSV.</p>
-      <div class="bg-emerald-600 text-white py-2 px-4 rounded-lg text-center font-semibold text-sm group-hover:bg-emerald-500 transition-colors">
-        Buka Dashboard
+      <div class="pwa-buttons">
+        <button class="btn-install" onclick="installPWA()">
+          <i class="fas fa-download"></i> Install
+        </button>
+        <button class="btn-later" onclick="dismissPWA()">Nanti</button>
       </div>
-    </a>
+    </div>
 
-  </div>
+    <!-- 🕐 Real-Time Clock Widget (WIB) -->
+    <div class="datetime-widget">
+      <div class="text-center">
+        <div id="realTimeClock" class="clock-time">00:00:00</div>
+        <div id="realDateDisplay" class="clock-date">Memuat tanggal...</div>
+        <div class="clock-timezone">🌏 WIB (UTC+7)</div>
+      </div>
+    </div>
 
-  <div class="mt-12 text-xs text-gray-600">
-    v4.0.0 • Multi-App Repository
+    <!-- ⚡ Quick Actions (Feature #8) -->
+    <div class="quick-actions">
+      <a href="./apps/input-voucher/" class="quick-action-btn">
+        <i class="fas fa-plus-circle"></i>
+        <span>Input Baru</span>
+      </a>
+      <a href="./apps/dashboard-voucher/" class="quick-action-btn">
+        <i class="fas fa-chart-line"></i>
+        <span>Dashboard</span>
+      </a>
+      <a href="#" onclick="exportQuick(); return false;" class="quick-action-btn">
+        <i class="fas fa-file-export"></i>
+        <span>Export CSV</span>
+      </a>
+      <a href="#" onclick="syncData(); return false;" class="quick-action-btn">
+        <i class="fas fa-sync-alt"></i>
+        <span>Sync Data</span>
+      </a>
+    </div>
+
+    <!-- Pilihan Aplikasi -->
+    <div class="grid md:grid-cols-2 gap-8 w-full max-w-4xl mx-auto">
+      
+      <!-- Card 1: Input Voucher -->
+      <a href="./apps/input-voucher/" class="glass-card p-8 rounded-2xl hover:border-indigo-500 transition-all group block">
+        <div class="text-4xl mb-4 group-hover:scale-110 transition-transform">📝</div>
+        <h2 class="text-xl font-bold text-indigo-300 mb-2">Input Voucher</h2>
+        <p class="text-sm text-gray-400 mb-6">Formulir pengajuan, upload bukti, dan pencatatan transaksi keuangan.</p>
+        <div class="bg-indigo-600 text-white py-2 px-4 rounded-lg text-center font-semibold text-sm group-hover:bg-indigo-500 transition-colors">
+          Buka Aplikasi Input
+        </div>
+      </a>
+
+      <!-- Card 2: Dashboard -->
+      <a href="./apps/dashboard-voucher/" class="glass-card p-8 rounded-2xl hover:border-emerald-500 transition-all group block">
+        <div class="text-4xl mb-4 group-hover:scale-110 transition-transform">📊</div>
+        <h2 class="text-xl font-bold text-emerald-300 mb-2">Dashboard & Rekap</h2>
+        <p class="text-sm text-gray-400 mb-6">Monitoring data, grafik statistik, dan export laporan PDF/CSV.</p>
+        <div class="bg-emerald-600 text-white py-2 px-4 rounded-lg text-center font-semibold text-sm group-hover:bg-emerald-500 transition-colors">
+          Buka Dashboard
+        </div>
+      </a>
+
+    </div>
+
+    <div class="mt-12 text-xs text-gray-600 text-center">
+      v4.0.0 • Multi-App Repository
+    </div>
   </div>
 
   <!-- 💬 Chat/Support Widget (Feature #11) -->
