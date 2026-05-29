@@ -22,13 +22,23 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   
   <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
     body { 
       font-family: 'Space Grotesk', sans-serif; 
       background-color: #0a0f1a; 
       color: #fff; 
-      margin: 0;
-      padding: 0;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
       overflow-x: hidden;
+      padding: 40px 20px;
     }
     
     .glass-card { 
@@ -43,11 +53,11 @@
       backdrop-filter: blur(10px);
       border: 1px solid rgba(99, 102, 241, 0.3);
       border-radius: 16px;
-      padding: 20px 30px;
-      margin: 20px auto;
-      max-width: 450px;
-      width: 90%;
-      box-shadow: 0 8px 32px rgba(99, 102, 241, 0.2);
+      padding: 30px 40px;
+      margin: 30px auto;
+      max-width: 500px;
+      width: 100%;
+      box-shadow: 0 8px 32px rgba(99, 102, 241, 0.3);
       animation: slideDown 0.5s ease;
     }
     
@@ -57,7 +67,7 @@
     }
     
     .clock-time {
-      font-size: 3rem;
+      font-size: 3.5rem;
       font-weight: 700;
       background: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);
       -webkit-background-clip: text;
@@ -79,21 +89,21 @@
     }
     
     .clock-date {
-      font-size: 1rem;
+      font-size: 1.1rem;
       color: #94a3b8;
-      margin-top: 8px;
+      margin-top: 10px;
       text-transform: capitalize;
       font-weight: 500;
     }
     
     .clock-timezone {
       display: inline-block;
-      margin-top: 10px;
-      padding: 4px 12px;
-      background: rgba(99, 102, 241, 0.2);
+      margin-top: 12px;
+      padding: 5px 15px;
+      background: rgba(99, 102, 241, 0.25);
       border: 1px solid rgba(99, 102, 241, 0.4);
       border-radius: 20px;
-      font-size: 0.75rem;
+      font-size: 0.8rem;
       color: #6366f1;
       font-weight: 600;
       letter-spacing: 0.5px;
@@ -102,46 +112,47 @@
     /* ⚡ Quick Actions */
     .quick-actions {
       display: flex;
-      gap: 12px;
+      gap: 15px;
       flex-wrap: wrap;
       justify-content: center;
-      margin: 25px 0;
+      margin: 30px 0;
       width: 100%;
-      max-width: 600px;
+      max-width: 650px;
     }
     
     .quick-action-btn {
-      background: rgba(99, 102, 241, 0.1);
+      background: rgba(99, 102, 241, 0.15);
       border: 1px solid rgba(99, 102, 241, 0.3);
       border-radius: 12px;
-      padding: 12px 20px;
+      padding: 15px 25px;
       color: #fff;
       text-decoration: none;
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 6px;
+      gap: 8px;
       transition: all 0.3s ease;
-      min-width: 100px;
+      min-width: 120px;
       flex: 1;
       max-width: 150px;
     }
     
     .quick-action-btn:hover {
-      background: rgba(99, 102, 241, 0.2);
+      background: rgba(99, 102, 241, 0.25);
       border-color: rgba(99, 102, 241, 0.6);
       transform: translateY(-3px);
-      box-shadow: 0 8px 20px rgba(99, 102, 241, 0.3);
+      box-shadow: 0 8px 20px rgba(99, 102, 241, 0.4);
     }
     
     .quick-action-btn i {
-      font-size: 1.5rem;
+      font-size: 1.6rem;
       color: #6366f1;
     }
     
     .quick-action-btn span {
-      font-size: 0.8rem;
-      font-weight: 500;
+      font-size: 0.85rem;
+      font-weight: 600;
+      text-align: center;
     }
 
     /* 📱 PWA Install Banner */
@@ -149,10 +160,10 @@
       background: linear-gradient(135deg, rgba(99, 102, 241, 0.2) 0%, rgba(168, 85, 247, 0.2) 100%);
       border: 1px solid rgba(99, 102, 241, 0.4);
       border-radius: 12px;
-      padding: 15px 20px;
-      margin: 20px auto;
+      padding: 18px 25px;
+      margin: 25px auto;
       max-width: 600px;
-      width: 90%;
+      width: 100%;
       display: none;
       align-items: center;
       gap: 15px;
@@ -164,7 +175,7 @@
     }
     
     .pwa-icon {
-      font-size: 2rem;
+      font-size: 2.2rem;
     }
     
     .pwa-content {
@@ -175,6 +186,7 @@
       font-weight: 600;
       color: #fff;
       margin-bottom: 3px;
+      font-size: 1rem;
     }
     
     .pwa-desc {
@@ -184,34 +196,36 @@
     
     .pwa-buttons {
       display: flex;
-      gap: 8px;
+      gap: 10px;
     }
     
     .btn-install {
       background: #6366f1;
       color: white;
       border: none;
-      padding: 8px 16px;
+      padding: 10px 20px;
       border-radius: 8px;
       font-weight: 600;
       cursor: pointer;
       transition: all 0.2s;
+      font-size: 0.9rem;
     }
     
     .btn-install:hover {
       background: #4f46e5;
-      transform: translateY(-1px);
+      transform: translateY(-2px);
     }
     
     .btn-later {
       background: transparent;
       color: #94a3b8;
       border: 1px solid rgba(255,255,255,0.2);
-      padding: 8px 16px;
+      padding: 10px 20px;
       border-radius: 8px;
       font-weight: 600;
       cursor: pointer;
       transition: all 0.2s;
+      font-size: 0.9rem;
     }
     
     .btn-later:hover {
@@ -219,11 +233,151 @@
       color: #fff;
     }
 
+    /* Main content wrapper */
+    .content-wrapper {
+      width: 100%;
+      max-width: 1000px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    /* Header Section */
+    .header-section {
+      text-align: center;
+      margin-bottom: 20px;
+      width: 100%;
+    }
+    
+    .header-section .emoji {
+      font-size: 3.5rem;
+      margin-bottom: 15px;
+      display: block;
+    }
+    
+    .header-section h1 {
+      font-size: 2.2rem;
+      font-weight: 700;
+      margin-bottom: 8px;
+      background: linear-gradient(135deg, #fff 0%, #94a3b8 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    
+    .header-section p {
+      color: #94a3b8;
+      font-size: 1rem;
+    }
+
+    /* App Cards Grid */
+    .app-cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 25px;
+      width: 100%;
+      max-width: 800px;
+      margin: 30px 0;
+    }
+    
+    .app-card {
+      background: rgba(19, 27, 46, 0.7);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 20px;
+      padding: 35px 30px;
+      text-decoration: none;
+      color: #fff;
+      transition: all 0.3s ease;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+    }
+    
+    .app-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 12px 40px rgba(0,0,0,0.3);
+    }
+    
+    .app-card.input-card:hover {
+      border-color: #6366f1;
+      box-shadow: 0 12px 40px rgba(99, 102, 241, 0.3);
+    }
+    
+    .app-card.dashboard-card:hover {
+      border-color: #10b981;
+      box-shadow: 0 12px 40px rgba(16, 185, 129, 0.3);
+    }
+    
+    .app-card .card-icon {
+      font-size: 3rem;
+      margin-bottom: 20px;
+    }
+    
+    .app-card .card-title {
+      font-size: 1.4rem;
+      font-weight: 700;
+      margin-bottom: 12px;
+    }
+    
+    .app-card.input-card .card-title {
+      color: #818cf8;
+    }
+    
+    .app-card.dashboard-card .card-title {
+      color: #34d399;
+    }
+    
+    .app-card .card-desc {
+      font-size: 0.9rem;
+      color: #94a3b8;
+      line-height: 1.6;
+      margin-bottom: 25px;
+    }
+    
+    .app-card .card-button {
+      width: 100%;
+      padding: 12px 24px;
+      border-radius: 10px;
+      text-align: center;
+      font-weight: 600;
+      font-size: 0.9rem;
+      transition: all 0.2s;
+    }
+    
+    .app-card.input-card .card-button {
+      background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+      color: white;
+    }
+    
+    .app-card.input-card .card-button:hover {
+      background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+      transform: scale(1.02);
+    }
+    
+    .app-card.dashboard-card .card-button {
+      background: linear-gradient(135deg, #10b981 0%, #34d399 100%);
+      color: white;
+    }
+    
+    .app-card.dashboard-card .card-button:hover {
+      background: linear-gradient(135deg, #059669 0%, #10b981 100%);
+      transform: scale(1.02);
+    }
+
+    /* Footer */
+    .footer {
+      margin-top: 40px;
+      text-align: center;
+      color: #64748b;
+      font-size: 0.85rem;
+    }
+
     /* 💬 Chat/Support Widget */
     .chat-widget {
       position: fixed;
-      bottom: 20px;
-      right: 20px;
+      bottom: 25px;
+      right: 25px;
       z-index: 1000;
     }
     
@@ -236,7 +390,7 @@
       color: white;
       font-size: 1.5rem;
       cursor: pointer;
-      box-shadow: 0 4px 20px rgba(99, 102, 241, 0.4);
+      box-shadow: 0 4px 20px rgba(99, 102, 241, 0.5);
       transition: all 0.3s ease;
       display: flex;
       align-items: center;
@@ -245,7 +399,7 @@
     
     .chat-button:hover {
       transform: scale(1.1);
-      box-shadow: 0 6px 30px rgba(99, 102, 241, 0.6);
+      box-shadow: 0 6px 30px rgba(99, 102, 241, 0.7);
     }
     
     .chat-button.pulse {
@@ -253,22 +407,22 @@
     }
     
     @keyframes chatPulse {
-      0%, 100% { box-shadow: 0 4px 20px rgba(99, 102, 241, 0.4); }
-      50% { box-shadow: 0 4px 30px rgba(99, 102, 241, 0.8); }
+      0%, 100% { box-shadow: 0 4px 20px rgba(99, 102, 241, 0.5); }
+      50% { box-shadow: 0 4px 30px rgba(99, 102, 241, 0.9); }
     }
     
     .chat-menu {
       position: absolute;
-      bottom: 70px;
+      bottom: 75px;
       right: 0;
-      background: rgba(19, 27, 46, 0.95);
-      backdrop-filter: blur(10px);
+      background: rgba(19, 27, 46, 0.98);
+      backdrop-filter: blur(15px);
       border: 1px solid rgba(99, 102, 241, 0.3);
       border-radius: 16px;
-      padding: 15px;
-      min-width: 250px;
+      padding: 18px;
+      min-width: 280px;
       display: none;
-      box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+      box-shadow: 0 15px 50px rgba(0,0,0,0.4);
       animation: slideUp 0.3s ease;
     }
     
@@ -283,19 +437,23 @@
     
     .chat-menu-header {
       font-weight: 700;
-      margin-bottom: 12px;
-      padding-bottom: 10px;
+      margin-bottom: 15px;
+      padding-bottom: 12px;
       border-bottom: 1px solid rgba(255,255,255,0.1);
       color: #6366f1;
+      font-size: 1.1rem;
+      display: flex;
+      align-items: center;
+      gap: 10px;
     }
     
     .chat-menu-item {
       display: flex;
       align-items: center;
-      gap: 12px;
-      padding: 10px;
-      border-radius: 8px;
-      margin-bottom: 6px;
+      gap: 14px;
+      padding: 12px;
+      border-radius: 10px;
+      margin-bottom: 8px;
       cursor: pointer;
       transition: all 0.2s;
       text-decoration: none;
@@ -304,11 +462,12 @@
     
     .chat-menu-item:hover {
       background: rgba(99, 102, 241, 0.2);
+      transform: translateX(5px);
     }
     
     .chat-menu-item i {
-      font-size: 1.2rem;
-      width: 24px;
+      font-size: 1.3rem;
+      width: 28px;
       text-align: center;
     }
     
@@ -317,34 +476,95 @@
     .chat-menu-item.email { color: #f59e0b; }
     .chat-menu-item.faq { color: #a855f7; }
 
-    /* Main container */
-    .main-container {
-      width: 100%;
-      max-width: 1200px;
-      margin: 0 auto;
-      padding: 20px;
+    /* Responsive */
+    @media (max-width: 768px) {
+      body {
+        padding: 25px 15px;
+      }
+      
+      .header-section .emoji {
+        font-size: 2.8rem;
+      }
+      
+      .header-section h1 {
+        font-size: 1.8rem;
+      }
+      
+      .clock-time {
+        font-size: 2.8rem;
+      }
+      
+      .clock-date {
+        font-size: 1rem;
+      }
+      
+      .datetime-widget {
+        padding: 25px 30px;
+      }
+      
+      .quick-actions {
+        gap: 10px;
+      }
+      
+      .quick-action-btn {
+        min-width: 100px;
+        padding: 12px 18px;
+        max-width: 130px;
+      }
+      
+      .quick-action-btn i {
+        font-size: 1.4rem;
+      }
+      
+      .quick-action-btn span {
+        font-size: 0.8rem;
+      }
+      
+      .app-cards {
+        grid-template-columns: 1fr;
+        gap: 20px;
+      }
+      
+      .app-card {
+        padding: 28px 24px;
+      }
+      
+      .chat-widget {
+        bottom: 20px;
+        right: 20px;
+      }
+      
+      .chat-button {
+        width: 55px;
+        height: 55px;
+        font-size: 1.3rem;
+      }
     }
 
-    @media (max-width: 640px) {
-      .clock-time { font-size: 2.2rem; }
-      .clock-date { font-size: 0.9rem; }
-      .datetime-widget { padding: 15px 20px; }
-      .quick-action-btn { min-width: 80px; padding: 10px 15px; }
-      .quick-action-btn i { font-size: 1.2rem; }
-      .quick-action-btn span { font-size: 0.75rem; }
-      .chat-widget { bottom: 15px; right: 15px; }
-      .chat-button { width: 50px; height: 50px; font-size: 1.2rem; }
+    @media (max-width: 480px) {
+      .clock-time {
+        font-size: 2.3rem;
+      }
+      
+      .quick-action-btn {
+        min-width: 90px;
+        padding: 10px 15px;
+      }
+      
+      .quick-action-btn span {
+        font-size: 0.75rem;
+      }
     }
   </style>
 </head>
 <body>
   
-  <div class="main-container">
-    <!-- Logo / Title -->
-    <div class="text-center mb-6">
-      <div class="text-5xl mb-4">💰</div>
-      <h1 class="text-3xl font-bold mb-2">Voucher Perusahaan</h1>
-      <p class="text-gray-400">Silakan pilih aplikasi yang ingin Anda buka:</p>
+  <div class="content-wrapper">
+    <!-- Header Section -->
+    <div class="header-section">
+      <span class="emoji">💰</span>
+      <h1>Voucher Perusahaan</h1>
+      <p>Silakan pilih aplikasi yang ingin Anda buka:</p>
     </div>
 
     <!-- 📱 PWA Install Banner (Feature #6) -->
@@ -392,31 +612,31 @@
     </div>
 
     <!-- Pilihan Aplikasi -->
-    <div class="grid md:grid-cols-2 gap-8 w-full max-w-4xl mx-auto">
+    <div class="app-cards">
       
       <!-- Card 1: Input Voucher -->
-      <a href="./apps/input-voucher/" class="glass-card p-8 rounded-2xl hover:border-indigo-500 transition-all group block">
-        <div class="text-4xl mb-4 group-hover:scale-110 transition-transform">📝</div>
-        <h2 class="text-xl font-bold text-indigo-300 mb-2">Input Voucher</h2>
-        <p class="text-sm text-gray-400 mb-6">Formulir pengajuan, upload bukti, dan pencatatan transaksi keuangan.</p>
-        <div class="bg-indigo-600 text-white py-2 px-4 rounded-lg text-center font-semibold text-sm group-hover:bg-indigo-500 transition-colors">
+      <a href="./apps/input-voucher/" class="app-card input-card">
+        <div class="card-icon">📝</div>
+        <h2 class="card-title">Input Voucher</h2>
+        <p class="card-desc">Formulir pengajuan, upload bukti, dan pencatatan transaksi keuangan.</p>
+        <div class="card-button">
           Buka Aplikasi Input
         </div>
       </a>
 
       <!-- Card 2: Dashboard -->
-      <a href="./apps/dashboard-voucher/" class="glass-card p-8 rounded-2xl hover:border-emerald-500 transition-all group block">
-        <div class="text-4xl mb-4 group-hover:scale-110 transition-transform">📊</div>
-        <h2 class="text-xl font-bold text-emerald-300 mb-2">Dashboard & Rekap</h2>
-        <p class="text-sm text-gray-400 mb-6">Monitoring data, grafik statistik, dan export laporan PDF/CSV.</p>
-        <div class="bg-emerald-600 text-white py-2 px-4 rounded-lg text-center font-semibold text-sm group-hover:bg-emerald-500 transition-colors">
+      <a href="./apps/dashboard-voucher/" class="app-card dashboard-card">
+        <div class="card-icon">📊</div>
+        <h2 class="card-title">Dashboard & Rekap</h2>
+        <p class="card-desc">Monitoring data, grafik statistik, dan export laporan PDF/CSV.</p>
+        <div class="card-button">
           Buka Dashboard
         </div>
       </a>
 
     </div>
 
-    <div class="mt-12 text-xs text-gray-600 text-center">
+    <div class="footer">
       v4.0.0 • Multi-App Repository
     </div>
   </div>
